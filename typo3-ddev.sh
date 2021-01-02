@@ -85,7 +85,7 @@ ask_typo3version() {
     fi
 
     if [ $setup_typo3version == 10 ] ; then
-        setup_typo3version_minor="10.3"
+        setup_typo3version_minor="10.4"
     fi
 
     return
