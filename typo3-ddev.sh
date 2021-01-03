@@ -213,7 +213,7 @@ if [ -d $docker_path ]; then
     # Start docker app
     printf "${NOTE} - Startup docker ${NC}"
     #killall Docker
-    open /Applications/Docker.app
+    open /Applications/Docker.app --background
 else 
     printf "${WARNING}${docker_path} not found!${NC}"
     printf "${WARNING}Make sure Docker is installed!${NC}"
