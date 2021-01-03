@@ -599,7 +599,7 @@ EOM
 
 
 
-cd ../../../
+cd ../../../../
 printf "${NOTE}Starting up ddev${NC}"
 printf "${WARNING}Docker must be running at this point!${NC}"
 cd $setup_basedirectory
