@@ -586,6 +586,11 @@ touch AdditionalConfiguration.php
         'port' => '3306',
         'user' => 'db',
         'driver' => 'mysqli',
+        'charset' => 'utf8mb4',
+        'tableoptions' => [
+            'charset' => 'utf8mb4',
+            'collate' => 'utf8mb4_unicode_ci',
+         ],
     ];
 
     // This mail configuration sends all emails to mailhog
