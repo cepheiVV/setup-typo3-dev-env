@@ -616,8 +616,8 @@ printf "${NOTE}Installing TYPO3${NC}"
 # only when helhum/typo3-console has been installed
 # https://github.com/TYPO3-Console/TYPO3-Console/issues/825#issuecomment-582397880
 # helhum:  "typo3 v10 support is planned and will be delivered."
-#ddev exec ./typo3_app/vendor/bin/typo3 install:setup
-#ddev exec ./typo3_app/vendor/bin/typo3 install:fixfolderstructure
+ddev exec ./typo3_app/vendor/bin/typo3cms install:setup
+ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
 
 
 
@@ -625,12 +625,12 @@ printf "${NOTE}Installing TYPO3${NC}"
 # Activate extensions
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
-ddev exec ./typo3_app/vendor/bin/typo3 extension:activate sitepackage_main
-ddev exec ./typo3_app/vendor/bin/typo3 extension:activate recycler
-ddev exec ./typo3_app/vendor/bin/typo3 extension:activate opendocs
-ddev exec ./typo3_app/vendor/bin/typo3 extension:activate ke_search
-ddev exec ./typo3_app/vendor/bin/typo3 extension:activate scheduler
-ddev exec ./typo3_app/vendor/bin/typo3 extension:activate vhs
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage_main
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate recycler
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
 
 
 
