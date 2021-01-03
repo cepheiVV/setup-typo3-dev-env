@@ -585,7 +585,7 @@ touch AdditionalConfiguration.php
         'password' => 'db',
         'port' => '3306',
         'user' => 'db',
-        'driver' => 'pdo_mysql',
+        'driver' => 'mysqli',
     ];
 
     // This mail configuration sends all emails to mailhog
