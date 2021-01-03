@@ -244,6 +244,7 @@ mkdir -p $setup_basedirectory
 cd $setup_basedirectory
 
 printf "${NOTE} - Initializing ddev ${NC}"
+ddev config --project-name $setup_projectname
 ddev config --project-type php
 ddev config --http-port $setup_port 
 ddev config --docroot public_html --create-docroot
