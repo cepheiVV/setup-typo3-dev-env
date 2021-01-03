@@ -91,6 +91,23 @@ ask_typo3version() {
     return
 }
 
+ask_typo3version_options() {
+    PS3="Set the desired TYPO3 version:"
+    select setup_typo3version in 8.7 9.5 10.4; do
+        case $setup_typo3version in
+            8.7)
+               setup_typo3version_minor="8.7";;
+            9.5)
+               setup_typo3version_minor="9.5";;
+            10.4)
+               setup_typo3version_minor="10.4";;
+            *) 
+               echo "Invalid option";;
+         esac
+      return
+    done
+}
+
 
 ask_basedirectory() {
     printf "${INPUT}Set the name of the directory in which .ddev will be set up.${NC}"
@@ -157,7 +174,7 @@ ask_confirmsetup() {
 
     ask_continue
     if [[ $ok =~ 0 ]] ; then
-        ask_typo3version
+        ask_typo3version_options
         ask_basedirectory
         ask_projectname
         ask_port
@@ -210,7 +227,7 @@ fi
 # get variables
 # --------------------------------------
 pwd=$(pwd)
-ask_typo3version
+ask_typo3version_options
 ask_basedirectory
 ask_projectname
 ask_port
@@ -480,7 +497,7 @@ touch composer.json
 /bin/cat <<EOM >composer.json
 {
     "name": "stubr/${setup_projectname}",
-    "description": "Main configuration for ${setup_projectname} with TYPO3 v${setup_typo3version}",
+    "description": "Main configuration for ${setup_projectname} with TYPO3 v${setup_typo3version_minor}",
     "type": "project",
     "repositories": [
         {
