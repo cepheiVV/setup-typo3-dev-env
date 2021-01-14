@@ -172,16 +172,36 @@ ask_confirmsetup() {
     printf "${NOTE}Port: ${setup_port}${NC}"
     printf "${WARNING}.ddev will be setup in ${pwd}/${setup_basedirectory}${NC}"
 
+    if [ "$install_bootstrap" = true ] ; then
+        printf "${NOTE}Install optional package: bk2k/bootstrap-package${NC}"
+    fi
     ask_continue
     if [[ $ok =~ 0 ]] ; then
         ask_typo3version_options
         ask_basedirectory
         ask_projectname
         ask_port
+        ask_bootstrap
         ask_confirmsetup
     fi
 
     return
+}
+
+ask_bootstrap () {
+    printf "${INPUT}Do you want to install bk2k/bootstrap-package package? [y/N] : ${NC}"
+    read -r i
+    case $i in
+        [yY])
+            install_bootstrap=true
+            return;;
+        [nN])
+            install_bootstrap=false
+            return;;
+        *)
+            install_bootstrap=false
+            return;;
+    esac
 }
 
 generate_password() {
@@ -236,6 +256,7 @@ ask_typo3version_options
 ask_basedirectory
 ask_projectname
 ask_port
+ask_bootstrap
 ask_confirmsetup
 
 
@@ -570,7 +591,10 @@ composer req fluidtypo3/vhs
 composer req teaminmedias-pluswerk/ke_search
 composer req helhum/typo3-console
 
-
+if [ "$install_bootstrap" = true ] ; then
+   printf "${NOTE}Installing optional package: bk2k/bootstrap-package${NC}"
+   composer req bk2k/bootstrap-package
+fi
 
 #
 # Prepare TYPO3
@@ -642,8 +666,6 @@ ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
-
-
 
 #
 # Add home page to db table:pages
