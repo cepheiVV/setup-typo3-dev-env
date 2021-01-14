@@ -184,8 +184,13 @@ ask_confirmsetup() {
     return
 }
 
-
-
+generate_password() {
+   printf "${NOTE}- - - - - - - - -${NC}"
+   printf "${NOTE}Generating admin password${NC}"
+   admin_password=`openssl rand -base64 12`
+   printf "${NOTE}- - - - - - - - -${NC}"
+   return
+}
 
 # 
 # init
@@ -621,7 +626,8 @@ printf "${NOTE}Installing TYPO3${NC}"
 # only when helhum/typo3-console has been installed
 # https://github.com/TYPO3-Console/TYPO3-Console/issues/825#issuecomment-582397880
 # helhum:  "typo3 v10 support is planned and will be delivered."
-ddev exec ./typo3_app/vendor/bin/typo3cms install:setup
+generate_password
+ddev exec ./typo3_app/vendor/bin/typo3cms install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
 ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
 
 
@@ -656,6 +662,9 @@ EOF
 ddev describe
 printf "${SUCCESS}Setup complete!${NC}"
 printf "${NOTE}Open the ddev URL in a browser${NC}"
+printf "${NOTE}Admin user is: admin${NC}"
+printf "${NOTE}Admin password is: $admin_password ${NC}"
+
 printf "${NOTE}and follow the TYPO3 install process.${NC}"
 printf "${SUCCESS}Have fun with your new ddev env!${NC}"
 exit 1
