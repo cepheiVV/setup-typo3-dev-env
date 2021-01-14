@@ -41,6 +41,9 @@ SUCCESS='\033[0;32m' #green
 NC='\033[0m\n' # set no color and line end
 
 
+
+OPTIONAL_EXTENSIONS=("bk2k/bootstrap-package" "t3/dce" "georgringer/news")
+OPTIONAL_EXTENSIONS_INSTALL=()
 # 
 # helper functions
 # --------------------------------------
@@ -172,37 +175,58 @@ ask_confirmsetup() {
     printf "${NOTE}Port: ${setup_port}${NC}"
     printf "${WARNING}.ddev will be setup in ${pwd}/${setup_basedirectory}${NC}"
 
-    if [ "$install_bootstrap" = true ] ; then
-        printf "${NOTE}Install optional package: bk2k/bootstrap-package${NC}"
-    fi
+    display_optional_extensions
     ask_continue
     if [[ $ok =~ 0 ]] ; then
         ask_typo3version_options
         ask_basedirectory
         ask_projectname
         ask_port
-        ask_bootstrap
+        ask_optional_extensions
         ask_confirmsetup
     fi
 
     return
 }
 
-ask_bootstrap () {
-    printf "${INPUT}Do you want to install bk2k/bootstrap-package package? [y/N] : ${NC}"
+# iterating over OPTIONAL_EXTENSIONS and 
+# assigning to OPTIONAL_EXTENSIONS_INSTALL array
+ask_optional_extensions () {
+   for EXTENSION in "${OPTIONAL_EXTENSIONS[@]}"
+   do
+      ask_optional_extension $EXTENSION
+   done
+}
+
+ask_optional_extension () {
+    printf "${INPUT}Do you want to install $1 package? [y/N] : ${NC}"
     read -r i
     case $i in
         [yY])
-            install_bootstrap=true
-            return;;
-        [nN])
-            install_bootstrap=false
+            OPTIONAL_EXTENSIONS_INSTALL+=($1)
             return;;
         *)
-            install_bootstrap=false
             return;;
     esac
 }
+
+# display only for confirmation
+display_optional_extensions () {
+   for EXTENSION in "${OPTIONAL_EXTENSIONS_INSTALL[@]}"
+   do
+      printf "${NOTE}Install extension $EXTENSION${NC}"
+   done
+}
+
+# install extensions in OPTIONAL_EXTENSIONS_INSTALL
+install_optional_extensions () {
+   for EXTENSION in "${OPTIONAL_EXTENSIONS_INSTALL[@]}"
+   do
+      printf "${NOTE}Installing optional extension: $EXTENSION${NC}${NC}"
+      composer req $EXTENSION
+   done
+}
+
 
 generate_password() {
    printf "${NOTE}- - - - - - - - -${NC}"
@@ -211,6 +235,8 @@ generate_password() {
    printf "${NOTE}- - - - - - - - -${NC}"
    return
 }
+
+
 
 # 
 # init
@@ -256,7 +282,7 @@ ask_typo3version_options
 ask_basedirectory
 ask_projectname
 ask_port
-ask_bootstrap
+ask_optional_extensions
 ask_confirmsetup
 
 
@@ -591,10 +617,7 @@ composer req fluidtypo3/vhs
 composer req teaminmedias-pluswerk/ke_search
 composer req helhum/typo3-console
 
-if [ "$install_bootstrap" = true ] ; then
-   printf "${NOTE}Installing optional package: bk2k/bootstrap-package${NC}"
-   composer req bk2k/bootstrap-package
-fi
+install_optional_extensions
 
 #
 # Prepare TYPO3
