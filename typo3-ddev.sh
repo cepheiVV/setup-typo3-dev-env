@@ -364,7 +364,7 @@ touch Configuration/TsConfig/Page/TCEMAIN.tsconfig
 touch Configuration/TsConfig/User/admins.tsconfig
 touch Configuration/TsConfig/User/editors.tsconfig
 touch Configuration/TsConfig/User/everyone.tsconfig
-touch Configuration/TypoScript/contants.typoscript
+touch Configuration/TypoScript/constants.typoscript
 touch Configuration/TypoScript/setup.typoscript
 touch Configuration/TypoScript/Includes/config.typoscript
 touch Configuration/TypoScript/Includes/page.typoscript
