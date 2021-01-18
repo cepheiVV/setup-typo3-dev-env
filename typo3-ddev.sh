@@ -174,8 +174,10 @@ ask_confirmsetup() {
     printf "${NOTE}Project name: ${setup_projectname}${NC}"
     printf "${NOTE}Port: ${setup_port}${NC}"
     printf "${WARNING}.ddev will be setup in ${pwd}/${setup_basedirectory}${NC}"
-
     display_optional_extensions
+    if [ "$install_pages" = true ] ; then
+      echo 'Add few sample pages'
+    fi
     ask_continue
     if [[ $ok =~ 0 ]] ; then
         ask_typo3version_options
@@ -183,6 +185,7 @@ ask_confirmsetup() {
         ask_projectname
         ask_port
         ask_optional_extensions
+        ask_pages_install
         ask_confirmsetup
     fi
 
@@ -227,13 +230,25 @@ install_optional_extensions () {
    done
 }
 
-
 generate_password() {
    printf "${NOTE}- - - - - - - - -${NC}"
    printf "${NOTE}Generating admin password${NC}"
    admin_password=`openssl rand -base64 12`
    printf "${NOTE}- - - - - - - - -${NC}"
    return
+}
+
+ask_pages_install () {
+    printf "${INPUT}Do you want us to add few (3) sample pages? [y/N] : ${NC}"
+    read -r i
+    case $i in
+        [yY])
+            install_pages=true
+            return;;
+        *)
+            install_pages=false
+            return;;
+    esac
 }
 
 
@@ -283,6 +298,7 @@ ask_basedirectory
 ask_projectname
 ask_port
 ask_optional_extensions
+ask_pages_install
 ask_confirmsetup
 
 
@@ -616,7 +632,7 @@ printf "${NOTE}Installing additional extensions${NC}"
 composer req fluidtypo3/vhs
 composer req teaminmedias-pluswerk/ke_search
 if [ "$setup_typo3version_minor" = "10.4" ] ; then
-composer req helhum/typo3-console
+      composer req helhum/typo3-console
    else
       composer req helhum/typo3-console:^5.8.6
    fi
@@ -701,8 +717,24 @@ ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
 printf "${NOTE}Adding Home page${NC}"
 ddev exec mysql --user=db --password=db db << EOF
 TRUNCATE pages;
-INSERT INTO pages (\`uid\`, \`pid\`, \`title\`, \`slug\`, \`doktype\`, \`is_siteroot\`) VALUES ('1', '0', 'Home', 'home', '1', '1');
+INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`, \`is_siteroot\`) VALUES ('0', 'Home', '/', '1', '1');
 EOF
+
+#
+# Optionally add few pages to table:pages
+# --------------------------------------
+if [ "$install_pages" = true ] ; then
+printf "${NOTE}Adding sample pages${NC}"
+   if [ "$setup_typo3version_minor" = "8.7" ] ; then
+      ddev exec mysql --user=db --password=db db << EOF
+      INSERT INTO pages (\`pid\`, \`title\`, \`doktype\`) VALUES ('1', 'About', '1'),('1', 'Page 1', '1'),('1', 'Page 2', '1');
+EOF
+   else
+      ddev exec mysql --user=db --password=db db << EOF
+      INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`) VALUES ('1', 'About', '/about', '1'),('1', 'Page 1', '/page-1', '1'),('1', 'Page 2', '/page-2', '1');
+EOF
+   fi
+fi
 
 
 
