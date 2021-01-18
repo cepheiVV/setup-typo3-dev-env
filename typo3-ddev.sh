@@ -615,7 +615,12 @@ composer install
 printf "${NOTE}Installing additional extensions${NC}"
 composer req fluidtypo3/vhs
 composer req teaminmedias-pluswerk/ke_search
+if [ "$setup_typo3version_minor" = "10.4" ] ; then
 composer req helhum/typo3-console
+   else
+      composer req helhum/typo3-console:^5.8.6
+   fi
+
 
 install_optional_extensions
 
