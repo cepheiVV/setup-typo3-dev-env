@@ -378,7 +378,7 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
 # write composer.json
 /bin/cat <<EOM >composer.json
 {
-    "name": "stubr/sitepackage_main",
+    "name": "itsc/sitepackage_main",
     "type": "typo3-cms-extension",
     "description": "Base extension for project ${setup_projectname}",
     "homepage": "https://sturmundbraem.ch/",
@@ -401,7 +401,7 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
     },
     "autoload": {
         "psr-4": {
-            "STUBR\\\Sitepackage\\\": "Classes/"
+            "ITSC\\\Sitepackage\\\": "Classes/"
         }
     }
 }
@@ -428,7 +428,7 @@ printf "${SUCCESS} - composer.json of base extension created${NC}"
         ],
         'autoload' => [
             'psr-4' => [
-                'STUBR\\\Sitepackage\\\' => 'Classes'
+                'ITSC\\\Sitepackage\\\' => 'Classes'
             ],
         ],
         'state' => 'stable',
@@ -461,7 +461,7 @@ defined('TYPO3_MODE') || die();
  * of our setup & constants.
  ******************************/
 \$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['Core/TypoScript/TemplateService']['runThroughTemplatesPostProcessing'][1501684692] =
-    \\STUBR\\Sitepackage\\Hooks\\TsTemplateHook::class . '->addTypoScriptTemplate';
+    \\ITSC\\Sitepackage\\Hooks\\TsTemplateHook::class . '->addTypoScriptTemplate';
 
 /***************
  * PageTS
@@ -477,7 +477,7 @@ printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
 # write Classes/Hooks/TsTemplateHook.php
 /bin/cat <<EOM > Classes/Hooks/TsTemplateHook.php
 <?php
-namespace STUBR\\Sitepackage\\Hooks;
+namespace ITSC\\Sitepackage\\Hooks;
 
 class TsTemplateHook
 {
@@ -549,7 +549,7 @@ cd ../../
 touch composer.json
 /bin/cat <<EOM >composer.json
 {
-    "name": "stubr/${setup_projectname}",
+    "name": "itsc/${setup_projectname}",
     "description": "Main configuration for ${setup_projectname} with TYPO3 v${setup_typo3version_minor}",
     "type": "project",
     "repositories": [
@@ -563,7 +563,7 @@ touch composer.json
     ],
     "require": {
         "helhum/typo3-secure-web": "^0.2.9",
-        "stubr/sitepackage_main": "^1",
+        "itsc/sitepackage_main": "^1",
         "typo3/cms-about": "^${setup_typo3version_minor}",
         "typo3/cms-adminpanel": "^${setup_typo3version_minor}",
         "typo3/cms-belog": "^${setup_typo3version_minor}",
@@ -586,7 +586,7 @@ touch composer.json
     },
     "autoload": {
         "psr-4": {
-            "STUBR\\\Sitepackage\\\": "packages/sitepackage/Classes/"
+            "ITSC\\\Sitepackage\\\": "packages/sitepackage/Classes/"
         }
     },
     "extra": {
