@@ -397,7 +397,6 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
     "name": "itsc/sitepackage_main",
     "type": "typo3-cms-extension",
     "description": "Base extension for project ${setup_projectname}",
-    "homepage": "https://sturmundbraem.ch/",
     "license": [
         "GPL-2.0-or-later"
     ],

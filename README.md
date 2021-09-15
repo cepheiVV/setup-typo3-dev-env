@@ -1,29 +1,7 @@
-# README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+# TYPO3 ddev env
 
-### What is this repository for? ###
+Quickly spin up a new TYPO3 project with ddev and basic file structure.
+Lets you install some basic extensions as well.
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+Just run the script: `sh typo3-dev-env` and follow the prompt
