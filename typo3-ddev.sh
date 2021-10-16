@@ -7,20 +7,16 @@
 # 
 # todo
 # --------------------------------------
-#  - generate valid composer for TYPO3 8.7
 #  - ask for extension vendor and replace all vendor strings
 #  - automate the TYPO3 installation, so there's no need for FIRST_INSTALL process
 #    with "typo3cms install:setup"
 #  - set a backend admin user 
 #    with "typo3cmd backend:createadmin"
 #  - ask for "path" where ddev should be set up
-#  - maybe add basic LocalConfiguration
-#    with "typo3cmd configuration:set"
 #  - Get Git host/account name, 
 #    then init a new GIT repository and 
 #    push it to Bitbucket / GitHub or GitLab
 #  - naming of domain(s)?
-#  - custom name instead of sitepackage_main ?
 #
 
 # 
@@ -42,7 +38,7 @@ NC='\033[0m\n' # set no color and line end
 
 
 
-OPTIONAL_EXTENSIONS=("bk2k/bootstrap-package" "t3/dce" "georgringer/news")
+OPTIONAL_EXTENSIONS=("bk2k/bootstrap-package" "mask/mask" "georgringer/news")
 OPTIONAL_EXTENSIONS_INSTALL=()
 # 
 # helper functions
@@ -332,8 +328,8 @@ mkdir -p packages
 cd packages 
 printf "${SUCCESS} - base file structure created${NC}"
 
-mkdir -p sitepackage_main
-cd sitepackage_main 
+mkdir -p sitepackage
+cd sitepackage 
 mkdir -p Classes
 mkdir -p Classes/Hooks
 mkdir -p Classes/ViewHelpers
@@ -394,7 +390,7 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
 # write composer.json
 /bin/cat <<EOM >composer.json
 {
-    "name": "itsc/sitepackage_main",
+    "name": "itsc/sitepackage",
     "type": "typo3-cms-extension",
     "description": "Base extension for project ${setup_projectname}",
     "license": [
@@ -418,7 +414,12 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
         "psr-4": {
             "ITSC\\\Sitepackage\\\": "Classes/"
         }
-    }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "sitepackage"
+        }
+    },
 }
 
 EOM
@@ -468,7 +469,7 @@ defined('TYPO3_MODE') || die();
 /***************
  * Add default RTE configuration
  */
-\$GLOBALS['TYPO3_CONF_VARS']['RTE']['Presets']['sitepackage_main'] = 'EXT:sitepackage_main/Configuration/RTE/Default.yaml';
+\$GLOBALS['TYPO3_CONF_VARS']['RTE']['Presets']['sitepackage'] = 'EXT:sitepackage/Configuration/RTE/Default.yaml';
 
 /******************************
  * Register TypoScript hook
@@ -482,7 +483,7 @@ defined('TYPO3_MODE') || die();
  * PageTS
  ***************/
 \\TYPO3\\CMS\\Core\\Utility\\ExtensionManagementUtility::addPageTSConfig(
-    '<INCLUDE_TYPOSCRIPT: source="FILE:EXT:sitepackage_main/Configuration/TsConfig/Page/All.tsconfig">'
+    '<INCLUDE_TYPOSCRIPT: source="FILE:EXT:sitepackage/Configuration/TsConfig/Page/All.tsconfig">'
 );
 
 EOM
@@ -516,10 +517,10 @@ class TsTemplateHook
         \$row = [
             'uid' => 'templatebootstrap',
             'constants' =>
-                '@import "EXT:sitepackage_main/Configuration/TypoScript/constants.typoscript"' . PHP_EOL
+                '@import "EXT:sitepackage/Configuration/TypoScript/constants.typoscript"' . PHP_EOL
                 . implode(PHP_EOL, \$constantOverrides) . PHP_EOL,
             'config' =>
-                '@import "EXT:sitepackage_main/Configuration/TypoScript/setup.typoscript"' . PHP_EOL
+                '@import "EXT:sitepackage/Configuration/TypoScript/setup.typoscript"' . PHP_EOL
                 . implode(PHP_EOL, \$setupOverrides) . PHP_EOL,
             'title' => 'Virtual Sitepackage TS root template'
         ];
@@ -578,7 +579,7 @@ touch composer.json
     ],
     "require": {
         "helhum/typo3-secure-web": "^0.2.9",
-        "itsc/sitepackage_main": "^1",
+        "itsc/sitepackage": "^1",
         "typo3/cms-about": "^${setup_typo3version_minor}",
         "typo3/cms-adminpanel": "^${setup_typo3version_minor}",
         "typo3/cms-belog": "^${setup_typo3version_minor}",
@@ -703,7 +704,7 @@ ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
 # Activate extensions
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage_main
+ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate recycler
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
