@@ -419,7 +419,7 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
         "typo3/cms": {
             "extension-key": "sitepackage"
         }
-    },
+    }
 }
 
 EOM
