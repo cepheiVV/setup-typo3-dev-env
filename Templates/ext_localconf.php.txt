@@ -1,0 +1,22 @@
+<?php
+defined('TYPO3_MODE') || die();
+
+/***************
+ * Add default RTE configuration
+ */
+$GLOBALS['TYPO3_CONF_VARS']['RTE']['Presets']['sitepackage'] = 'EXT:sitepackage/Configuration/RTE/Default.yaml';
+
+/******************************
+ * Register TypoScript hook
+ * for automatic inclusion
+ * of our setup & constants.
+ ******************************/
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['Core/TypoScript/TemplateService']['runThroughTemplatesPostProcessing'][1501684692] =
+    \\${setup_namespace_uppercase}\Sitepackage\Hooks\TsTemplateHook::class . '->addTypoScriptTemplate';
+
+/***************
+ * PageTS
+ ***************/
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
+    '<INCLUDE_TYPOSCRIPT: source="FILE:EXT:sitepackage/Configuration/TsConfig/Page/All.tsconfig">'
+);

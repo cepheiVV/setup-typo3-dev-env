@@ -1,5 +1,5 @@
 {
-    "name": "itsc/sitepackage",
+    "name": "${setup_namespace}/sitepackage",
     "type": "typo3-cms-extension",
     "description": "Base extension for project ${setup_projectname}",
     "license": [
@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-4": {
-            "ITSC\\\Sitepackage\\\": "Classes/"
+            "${setup_namespace_uppercase}\\\\Sitepackage\\\\": "Classes/"
         }
     },
     "extra": {

@@ -60,6 +60,21 @@ ask_continue () {
     esac
 }
 
+# This function makes the substitutions more robust
+# comes from https://stackoverflow.com/a/40167919
+expandVarsStrict(){
+  local line lineEscaped
+  while IFS= read -r line || [[ -n $line ]]; do  # the `||` clause ensures that the last line is read even if it doesn't end with \n
+    # Escape ALL chars. that could trigger an expansion..
+    IFS= read -r -d '' lineEscaped < <(printf %s "$line" | tr '`([$' '\1\2\3\4')
+    # ... then selectively reenable ${ references
+    lineEscaped=${lineEscaped//$'\4'{/\${}
+    # Finally, escape embedded double quotes to preserve them.
+    lineEscaped=${lineEscaped//\"/\\\"}
+    eval "printf '%s\n' \"$lineEscaped\"" | tr '\1\2\3\4' '`([$'
+  done
+}
+
 ask_typo3version_options() {
     PS3="Set the desired TYPO3 version: "
     select setup_typo3version in 8.7 9.5 10.4; do
@@ -131,6 +146,24 @@ ask_projectname() {
     return
 }
 
+ask_namespace() {
+    printf "${INPUT}Set the namespace of the client or project in lowercase characters.${NC}"
+    printf "${INPUT}Namespace (max 4 characters):${NC}"
+    read -r -n 4 setup_namespace
+    setup_namespace_uppercase=$(tr '[:lower:]' '[:upper:]' <<< $setup_namespace)
+
+    if [[ $setup_projectname =~ [A-Z] ]] ; then
+        printf "${WARNING}Only use lowercase letters!${NC}"
+        ask_namespace
+    fi
+
+    if ! [[ $setup_projectname =~ ^[a-z_0-9]+$ ]] ; then
+        printf "${WARNING}Don't use spaces or special chars other than underscore!${NC}"
+        ask_namespace
+    fi
+    return
+}
+
 ask_port() {
     printf "${INPUT}Set the port on which .ddev will be accessed.${NC}"
     printf "${INPUT}Port [8080] : ${NC}"
@@ -155,6 +188,7 @@ ask_confirmsetup() {
     printf "${NOTE}TYPO3 Version: ${setup_typo3version_minor}${NC}"
     printf "${NOTE}Directory: ${setup_basedirectory}${NC}"
     printf "${NOTE}Project name: ${setup_projectname}${NC}"
+    printf "${NOTE}Project namespace: ${setup_namespace_uppercase}${NC}"
     printf "${NOTE}Port: ${setup_port}${NC}"
     printf "${WARNING}.ddev will be setup in ${pwd}/${setup_basedirectory}${NC}"
     display_optional_extensions
@@ -166,6 +200,7 @@ ask_confirmsetup() {
         ask_typo3version_options
         ask_basedirectory
         ask_projectname
+        ask_namespace
         ask_port
         ask_optional_extensions
         ask_pages_install
@@ -278,9 +313,11 @@ fi
 # get variables
 # --------------------------------------
 pwd=$(pwd)
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ask_typo3version_options
 ask_basedirectory
 ask_projectname
+ask_namespace
 ask_port
 ask_optional_extensions
 ask_pages_install
@@ -377,159 +414,22 @@ printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
 
 
 # write composer.json
-/bin/cat <<EOM >composer.json
-{
-    "name": "itsc/sitepackage",
-    "type": "typo3-cms-extension",
-    "description": "Base extension for project ${setup_projectname}",
-    "license": [
-        "GPL-2.0-or-later"
-    ],
-    "keywords": [
-        "TYPO3 CMS"
-    ],
-    "version": "1.1.0",
-    "authors": [
-        {
-            "name": "Patrick Crausaz",
-            "email": "info@its-crausaz.ch",
-            "homepage": "https://its-crausaz.ch/"
-        }
-    ],
-    "require": {
-        "typo3/cms-core": "^${setup_typo3version_minor}"
-    },
-    "autoload": {
-        "psr-4": {
-            "ITSC\\\Sitepackage\\\": "Classes/"
-        }
-    },
-    "extra": {
-        "typo3/cms": {
-            "extension-key": "sitepackage"
-        }
-    }
-}
-
-EOM
+expandVarsStrict< "${SCRIPT_DIR}/templates/composer.json" > composer.json
 printf "${SUCCESS} - composer.json of base extension created${NC}"
 
 
-
 # write ext_emconf.php
-/bin/cat <<EOM >ext_emconf.php
-<?php
-
-    \$EM_CONF[\$_EXTKEY] = [
-        'title' => 'Sitepackage Main',
-        'description' => 'Base extension for project: ${setup_projectname}',
-        'category' => 'templates',
-        'constraints' => [
-            'depends' => [
-                'typo3' => '${setup_typo3version_minor}.0-${setup_typo3version_minor}.99',
-                'fluid_styled_content' => '${setup_typo3version_minor}.0-${setup_typo3version_minor}.99',
-                'rte_ckeditor' => '${setup_typo3version_minor}.0-${setup_typo3version_minor}.99'
-            ]
-        ],
-        'autoload' => [
-            'psr-4' => [
-                'ITSC\\\Sitepackage\\\' => 'Classes'
-            ],
-        ],
-        'state' => 'stable',
-        'uploadfolder' => 0,
-        'createDirs' => '',
-        'clearCacheOnLoad' => 1,
-        'author' => 'Patrick crausaz',
-        'author_email' => 'info@its-crausaz.ch',
-        'author_company' => 'ITS Crausaz',
-        'version' => '1.1.0',
-    ];
-
-EOM
+expandVarsStrict< "${SCRIPT_DIR}/templates/ext_emconf.php.txt" > ext_emconf.php
 printf "${SUCCESS} - ext_emconf.php of base extension created${NC}"
 
 
 #write ext_localconf.php
-/bin/cat <<EOM >ext_localconf.php
-<?php
-defined('TYPO3_MODE') || die();
-
-/***************
- * Add default RTE configuration
- */
-\$GLOBALS['TYPO3_CONF_VARS']['RTE']['Presets']['sitepackage'] = 'EXT:sitepackage/Configuration/RTE/Default.yaml';
-
-/******************************
- * Register TypoScript hook
- * for automatic inclusion
- * of our setup & constants.
- ******************************/
-\$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['Core/TypoScript/TemplateService']['runThroughTemplatesPostProcessing'][1501684692] =
-    \\ITSC\\Sitepackage\\Hooks\\TsTemplateHook::class . '->addTypoScriptTemplate';
-
-/***************
- * PageTS
- ***************/
-\\TYPO3\\CMS\\Core\\Utility\\ExtensionManagementUtility::addPageTSConfig(
-    '<INCLUDE_TYPOSCRIPT: source="FILE:EXT:sitepackage/Configuration/TsConfig/Page/All.tsconfig">'
-);
-
-EOM
+expandVarsStrict< "${SCRIPT_DIR}/templates/ext_localconf.php.txt" > ext_localconf.php
 printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
 
 
 # write Classes/Hooks/TsTemplateHook.php
-/bin/cat <<EOM > Classes/Hooks/TsTemplateHook.php
-<?php
-namespace ITSC\\Sitepackage\\Hooks;
-
-class TsTemplateHook
-{
-
-    /**
-     * Hooks into TemplateService to add a TS template
-     *
-     * @param array \$parameters
-     * @param \\TYPO3\\CMS\\Core\\TypoScript\\TemplateService \$parentObject
-     */
-    public function addTypoScriptTemplate(\$parameters, \\TYPO3\\CMS\\Core\\TypoScript\\TemplateService \$parentObject)
-    {
-        // Read any constants / setup that may have been set via an actual
-        // sys_template record. Append those values later to our <INCLUDE_TYPOSCRIPT>
-        // These values *override* values that may be set via the extension
-        // TypoScript!
-        \$constantOverrides = \$parentObject->constants;
-        \$setupOverrides = \$parentObject->config;
-
-        // Add a custom, fake 'sys_template' record
-        \$row = [
-            'uid' => 'templatebootstrap',
-            'constants' =>
-                '@import "EXT:sitepackage/Configuration/TypoScript/constants.typoscript"' . PHP_EOL
-                . implode(PHP_EOL, \$constantOverrides) . PHP_EOL,
-            'config' =>
-                '@import "EXT:sitepackage/Configuration/TypoScript/setup.typoscript"' . PHP_EOL
-                . implode(PHP_EOL, \$setupOverrides) . PHP_EOL,
-            'title' => 'Virtual Sitepackage TS root template'
-        ];
-
-        \$parentObject->processTemplate(
-            \$row,
-            'sys_' . \$row['uid'],
-            \$parameters['absoluteRootLine'][0]['uid'],
-            'sys_' . \$row['uid']
-        );
-
-        // Though \$parentObject->rootId is deprecated (and protected),
-        // this needs to be set (as there are no alternatives yet).
-        // One of the side-effects, if not set, is that the menu
-        // rendering cannot determine the current/active states.
-        \$parentObject->rootId = \$parameters['absoluteRootLine'][0]['uid'];
-    }
-}
-
-EOM
+expandVarsStrict< "${SCRIPT_DIR}/templates/TsTemplateHook.php.txt" > Classes/Hooks/TsTemplateHook.php
 printf "${SUCCESS} - Classes/Hooks/TsTemplateHook.php of base extension created${NC}"
 
 
@@ -552,63 +452,8 @@ cd ../../
 # composer require "typo3/cms-about:^8.7" "typo3/cms-adminpanel:^8.7" "typo3/cms-backend:^8.7" "typo3/cms-belog:^8.7" "typo3/cms-beuser:^8.7" "typo3/cms-core:^8.7" "typo3/cms-extbase:^8.7" "typo3/cms-extensionmanager:^8.7" "typo3/cms-filelist:^8.7" "typo3/cms-fluid:^8.7" "typo3/cms-fluid-styled-content:^8.7" "typo3/cms-form:^8.7" "typo3/cms-frontend:^8.7" "typo3/cms-impexp:^8.7" "typo3/cms-info:^8.7" "typo3/cms-install:^8.7" "typo3/cms-lowlevel:^8.7" "typo3/cms-opendocs:^8.7" "typo3/cms-recordlist:^8.7" "typo3/cms-recycler:^8.7" "typo3/cms-reports:^8.7" "typo3/cms-rte-ckeditor:^8.7" "typo3/cms-scheduler:^8.7" "typo3/cms-setup:^8.7" "typo3/cms-tstemplate:^8.7" "typo3/cms-viewpage:^8.7"
 #
 touch composer.json
-/bin/cat <<EOM >composer.json
-{
-    "name": "itsc/${setup_projectname}",
-    "description": "Main configuration for ${setup_projectname} with TYPO3 v${setup_typo3version_minor}",
-    "type": "project",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./packages/*",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
-    "require": {
-        "helhum/typo3-secure-web": "^0.2.9",
-        "itsc/sitepackage": "^1",
-        "typo3/cms-about": "^${setup_typo3version_minor}",
-        "typo3/cms-adminpanel": "^${setup_typo3version_minor}",
-        "typo3/cms-belog": "^${setup_typo3version_minor}",
-        "typo3/cms-beuser": "^${setup_typo3version_minor}",
-        "typo3/cms-fluid-styled-content": "^${setup_typo3version_minor}",
-        "typo3/cms-form": "^${setup_typo3version_minor}",
-        "typo3/cms-impexp": "^${setup_typo3version_minor}",
-        "typo3/cms-info": "^${setup_typo3version_minor}",
-        "typo3/cms-lowlevel": "^${setup_typo3version_minor}",
-        "typo3/cms-opendocs": "^${setup_typo3version_minor}",
-        "typo3/cms-recycler": "^${setup_typo3version_minor}",
-        "typo3/cms-redirects": "^${setup_typo3version_minor}",
-        "typo3/cms-reports": "^${setup_typo3version_minor}",
-        "typo3/cms-rte-ckeditor": "^${setup_typo3version_minor}",
-        "typo3/cms-scheduler": "^${setup_typo3version_minor}",
-        "typo3/cms-seo": "^${setup_typo3version_minor}",
-        "typo3/cms-setup": "^${setup_typo3version_minor}",
-        "typo3/cms-tstemplate": "^${setup_typo3version_minor}",
-        "typo3/cms-viewpage": "^${setup_typo3version_minor}"
-    },
-    "autoload": {
-        "psr-4": {
-            "ITSC\\\Sitepackage\\\": "packages/sitepackage/Classes/"
-        }
-    },
-    "extra": {
-        "typo3/cms": {
-            "root-dir": "typo3-secure-web",
-            "web-dir": "../public_html"
-        }
-    },
-    "authors": [
-        {
-            "name": "Patrick Crausaz",
-            "email": "crausaz.patrick@gmail.com"
-        }
-    ]
-}
-
-EOM
+# write composer.json
+expandVarsStrict< "${SCRIPT_DIR}/templates/main-composer.json" > composer.json
 printf "${SUCCESS} - Main composer.json of the project created${NC}"
 
 

@@ -1,0 +1,54 @@
+{
+   "name": "${setup_namespace}/${setup_projectname}",
+   "description": "Main configuration for ${setup_projectname} with TYPO3 v${setup_typo3version_minor}",
+   "type": "project",
+   "repositories": [
+       {
+           "type": "path",
+           "url": "./packages/*",
+           "options": {
+               "symlink": true
+           }
+       }
+   ],
+   "require": {
+       "helhum/typo3-secure-web": "^0.2.9",
+       "${setup_namespace}/sitepackage": "^1",
+       "typo3/cms-about": "^${setup_typo3version_minor}",
+       "typo3/cms-adminpanel": "^${setup_typo3version_minor}",
+       "typo3/cms-belog": "^${setup_typo3version_minor}",
+       "typo3/cms-beuser": "^${setup_typo3version_minor}",
+       "typo3/cms-fluid-styled-content": "^${setup_typo3version_minor}",
+       "typo3/cms-form": "^${setup_typo3version_minor}",
+       "typo3/cms-impexp": "^${setup_typo3version_minor}",
+       "typo3/cms-info": "^${setup_typo3version_minor}",
+       "typo3/cms-lowlevel": "^${setup_typo3version_minor}",
+       "typo3/cms-opendocs": "^${setup_typo3version_minor}",
+       "typo3/cms-recycler": "^${setup_typo3version_minor}",
+       "typo3/cms-redirects": "^${setup_typo3version_minor}",
+       "typo3/cms-reports": "^${setup_typo3version_minor}",
+       "typo3/cms-rte-ckeditor": "^${setup_typo3version_minor}",
+       "typo3/cms-scheduler": "^${setup_typo3version_minor}",
+       "typo3/cms-seo": "^${setup_typo3version_minor}",
+       "typo3/cms-setup": "^${setup_typo3version_minor}",
+       "typo3/cms-tstemplate": "^${setup_typo3version_minor}",
+       "typo3/cms-viewpage": "^${setup_typo3version_minor}"
+   },
+   "autoload": {
+       "psr-4": {
+           "${setup_namespace_uppercase}\\\\Sitepackage\\\\": "packages/sitepackage/Classes/"
+       }
+   },
+   "extra": {
+       "typo3/cms": {
+           "root-dir": "typo3-secure-web",
+           "web-dir": "../public_html"
+       }
+   },
+   "authors": [
+       {
+           "name": "Patrick Crausaz",
+           "email": "crausaz.patrick@gmail.com"
+       }
+   ]
+}
