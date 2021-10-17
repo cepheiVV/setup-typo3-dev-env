@@ -1,25 +1,25 @@
 #!/bin/bash
 
-# 
-# Version 1.1.0
-# 
+#
+# Version 1.1.1
+#
 
-# 
+#
 # todo
 # --------------------------------------
 #  - ask for extension vendor and replace all vendor strings
 #  - automate the TYPO3 installation, so there's no need for FIRST_INSTALL process
 #    with "typo3cms install:setup"
-#  - set a backend admin user 
+#  - set a backend admin user
 #    with "typo3cmd backend:createadmin"
 #  - ask for "path" where ddev should be set up
-#  - Get Git host/account name, 
-#    then init a new GIT repository and 
+#  - Get Git host/account name,
+#    then init a new GIT repository and
 #    push it to Bitbucket / GitHub or GitLab
 #  - naming of domain(s)?
 #
 
-# 
+#
 # define colors
 # --------------------------------------
 # Black        0;30     Dark Gray     1;30
@@ -40,11 +40,11 @@ NC='\033[0m\n' # set no color and line end
 
 OPTIONAL_EXTENSIONS=("bk2k/bootstrap-package" "mask/mask" "georgringer/news")
 OPTIONAL_EXTENSIONS_INSTALL=()
-# 
+#
 # helper functions
 # --------------------------------------
 ask_continue () {
-    printf "${INPUT}Continue? [Y/N] : ${NC}"
+    printf "${INPUT}Continue? [y/n]: ${NC}"
     read -r i
     case $i in
         [yY])
@@ -60,38 +60,8 @@ ask_continue () {
     esac
 }
 
-ask_typo3version() {
-    printf "${INPUT}Set the desired TYPO3 version. 8, 9 or 10${NC}"
-    printf "${INPUT}TYPO3 Version:${NC}"
-    read -r setup_typo3version
-    
-    if ! [[ $setup_typo3version =~ ^[0-9]+$ ]] ; then
-        printf "${WARNING}Only use numbers!${NC}"
-        ask_typo3version
-    fi
-
-    if ! [[ $setup_typo3version =~ 8|9|10 ]] ; then
-        printf "${WARNING}Invalid TYPO3 version!${NC}"
-        ask_typo3version
-    fi
-
-    if [ $setup_typo3version == 8 ] ; then
-        setup_typo3version_minor="8.7"
-    fi
-
-    if [ $setup_typo3version == 9 ] ; then
-        setup_typo3version_minor="9.5"
-    fi
-
-    if [ $setup_typo3version == 10 ] ; then
-        setup_typo3version_minor="10.4"
-    fi
-
-    return
-}
-
 ask_typo3version_options() {
-    PS3="Set the desired TYPO3 version:"
+    PS3="Set the desired TYPO3 version: "
     select setup_typo3version in 8.7 9.5 10.4; do
         case $setup_typo3version in
             8.7)
@@ -100,7 +70,7 @@ ask_typo3version_options() {
                setup_typo3version_minor="9.5";;
             10.4)
                setup_typo3version_minor="10.4";;
-            *) 
+            *)
                echo "Invalid option";;
          esac
       return
@@ -109,21 +79,39 @@ ask_typo3version_options() {
 
 
 ask_basedirectory() {
-    printf "${INPUT}Set the name of the directory in which .ddev will be set up.${NC}"
-    printf "${INPUT}Directory name:${NC}"
-    read -r setup_basedirectory
+    printf "${NOTE}Current directory: ${WARNING}${pwd}${NC}"
+    printf "${INPUT}Do you want to use current directory as an installation path? [Y/n]${NC}"
+    read -r i
+    case $i in
+        [nN])
+            ok=1
+            ;;
+        *)
+            ok=0
+            ;;
+    esac
 
-    if [[ $setup_basedirectory =~ [A-Z] ]] ; then 
-        printf "${WARNING}Only use lowercase letters!${NC}"
-        ask_basedirectory
+    if [[ $ok =~ 0 ]] ; then
+      setup_basedirectory="."
+    else
+      ask_newbasedirectory
     fi
+}
 
-    if ! [[ $setup_basedirectory =~ ^[a-z0-9]+$ ]] ; then
-        printf "${WARNING}Don't use spaces or special chars!${NC}"
-        ask_basedirectory
-    fi
-    
-    return
+ask_newbasedirectory() {
+   printf "${NOTE}Enter new (relative) path name${NC}"
+   printf "${INPUT}${cwd}/${NC}"
+   read -r setup_basedirectory
+
+   if [[ $setup_basedirectory =~ [A-Z] ]] ; then
+      printf "${WARNING}Only use lowercase letters!${NC}"
+      ask_newbasedirectory
+   fi
+
+   if ! [[ $setup_basedirectory =~ ^[a-z0-9]+$ ]] ; then
+      printf "${WARNING}Don't use spaces or special chars!${NC}"
+      ask_newbasedirectory
+   fi
 }
 
 ask_projectname() {
@@ -131,10 +119,10 @@ ask_projectname() {
     printf "${INPUT}Project name:${NC}"
     read -r setup_projectname
 
-    if [[ $setup_projectname =~ [A-Z] ]] ; then 
+    if [[ $setup_projectname =~ [A-Z] ]] ; then
         printf "${WARNING}Only use lowercase letters!${NC}"
         ask_projectname
-    fi 
+    fi
 
     if ! [[ $setup_projectname =~ ^[a-z_0-9]+$ ]] ; then
         printf "${WARNING}Don't use spaces or special chars other than underscore!${NC}"
@@ -148,7 +136,7 @@ ask_port() {
     printf "${INPUT}Set the port on which .ddev will be accessed.${NC}"
     printf "${INPUT}Port [8080] : ${NC}"
     read -r setup_port
-    
+
     # check if empty, then use default port
     if [ -z $setup_port ] ; then
         setup_port="8080"
@@ -188,7 +176,7 @@ ask_confirmsetup() {
     return
 }
 
-# iterating over OPTIONAL_EXTENSIONS and 
+# iterating over OPTIONAL_EXTENSIONS and
 # assigning to OPTIONAL_EXTENSIONS_INSTALL array
 ask_optional_extensions () {
    for EXTENSION in "${OPTIONAL_EXTENSIONS[@]}"
@@ -249,11 +237,12 @@ ask_pages_install () {
 
 
 
-# 
+#
 # init
 # --------------------------------------
-printf "${NOTE}Spin up a new ddev environment with TYPO3 secure web${NC}"
-printf "${INPUT}Make sure to run this script in the directory where .ddev will be located!${NC}"
+printf "${NOTE}Preparing to spin up a new ddev environment with 🔐 TYPO3 secure web${NC}"
+printf "${NOTE}We will ask you a series of questions about your project,${NC}"
+printf "${NOTE}prepare a config, and launch it.${NC}"
 ask_continue
 if [[ $ok =~ 0 ]] ; then
     printf "${WARNING}exit!${NC}"
@@ -273,10 +262,11 @@ docker_path="/Applications/Docker.app"
 if [ -d $docker_path ]; then
     printf "${SUCCESS}Docker found${NC}"
     # Start docker app
-    printf "${NOTE} - Startup docker ${NC}"
-    #killall Docker
-    open /Applications/Docker.app --background
-else 
+    if ! docker info > /dev/null 2>&1; then
+      printf "${NOTE} - Startup docker ${NC}"
+      open /Applications/Docker.app --background
+    fi
+else
     printf "${WARNING}${docker_path} not found!${NC}"
     printf "${WARNING}Make sure Docker is installed!${NC}"
     exit 1
@@ -285,7 +275,7 @@ fi
 
 
 
-# 
+#
 # get variables
 # --------------------------------------
 pwd=$(pwd)
@@ -299,7 +289,7 @@ ask_confirmsetup
 
 
 
-# 
+#
 # start to setup .ddev
 # --------------------------------------
 printf "${SUCCESS}Starting to setup .ddev!${NC}"
@@ -310,7 +300,7 @@ cd $setup_basedirectory
 printf "${NOTE} - Initializing ddev ${NC}"
 ddev config --project-name $setup_projectname
 ddev config --project-type php
-ddev config --http-port $setup_port 
+ddev config --http-port $setup_port
 ddev config --docroot public_html --create-docroot
 ddev config --project-type typo3
 
@@ -323,13 +313,13 @@ touch .gitignore
 mkdir .vscode
 touch .vscode/extensions.json
 mkdir -p typo3_app
-cd typo3_app 
+cd typo3_app
 mkdir -p packages
-cd packages 
+cd packages
 printf "${SUCCESS} - base file structure created${NC}"
 
 mkdir -p sitepackage
-cd sitepackage 
+cd sitepackage
 mkdir -p Classes
 mkdir -p Classes/Hooks
 mkdir -p Classes/ViewHelpers
@@ -354,7 +344,7 @@ mkdir -p Resources/Private
 mkdir -p Resources/Private/Templates
 mkdir -p Resources/Private/Partials
 mkdir -p Resources/Private/Layouts
-mkdir -p Resources/Private/Language 
+mkdir -p Resources/Private/Language
 mkdir -p Resources/Private/Extensions
 mkdir -p Resources/Public
 mkdir -p Resources/Public/dist
@@ -430,7 +420,7 @@ printf "${SUCCESS} - composer.json of base extension created${NC}"
 # write ext_emconf.php
 /bin/cat <<EOM >ext_emconf.php
 <?php
-    
+
     \$EM_CONF[\$_EXTKEY] = [
         'title' => 'Sitepackage Main',
         'description' => 'Base extension for project: ${setup_projectname}',
@@ -690,7 +680,7 @@ ddev start
 # Install TYPO3
 # --------------------------------------
 printf "${NOTE}Installing TYPO3${NC}"
-# todo: 
+# todo:
 # only when helhum/typo3-console has been installed
 # https://github.com/TYPO3-Console/TYPO3-Console/issues/825#issuecomment-582397880
 # helhum:  "typo3 v10 support is planned and will be delivered."
