@@ -99,9 +99,8 @@ ask_basedirectory() {
 }
 
 ask_newbasedirectory() {
-   printf "${NOTE}Enter new (relative) path name${NC}"
-   printf "${INPUT}${cwd}/${NC}"
-   read -r setup_basedirectory
+   printf "${NOTE}Enter new path name (relative to current):${NC}"
+   read -r -p "${pwd}/" setup_basedirectory
 
    if [[ $setup_basedirectory =~ [A-Z] ]] ; then
       printf "${WARNING}Only use lowercase letters!${NC}"
@@ -622,10 +621,10 @@ printf "${NOTE}Installing additional extensions${NC}"
 composer req fluidtypo3/vhs
 composer req teaminmedias-pluswerk/ke_search
 if [ "$setup_typo3version_minor" = "10.4" ] ; then
-      composer req helhum/typo3-console
-   else
-      composer req helhum/typo3-console:^5.8.6
-   fi
+   composer req helhum/typo3-console:^6
+else
+   composer req helhum/typo3-console:^5
+fi
 
 
 install_optional_extensions
