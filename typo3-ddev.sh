@@ -116,7 +116,7 @@ ask_basedirectory() {
 ask_newbasedirectory() {
    printf "${NOTE}Enter new path name (relative to current):${NC}"
    read -r -p "${pwd}/" setup_basedirectory
-   if ! [[ $setup_basedirectory =~ ^[0-9a-zA-Z._-/]+$ ]] ; then
+   if ! [[ $setup_basedirectory =~ ^[a-zA-Z_0-9\/\.]+$ ]] ; then
       printf "${WARNING}Please, don't use spaces or special chars!${NC}"
       ask_newbasedirectory
    fi
