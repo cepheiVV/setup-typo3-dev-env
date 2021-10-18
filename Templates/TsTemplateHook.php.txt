@@ -1,5 +1,5 @@
 <?php
-namespace ${setup_namespace_uppercase}\Sitepackage\Hooks;
+namespace ${setup_namespace}\Sitepackage\Hooks;
 
 class TsTemplateHook
 {

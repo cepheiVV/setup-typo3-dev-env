@@ -1,5 +1,5 @@
 {
-    "name": "${setup_namespace}/sitepackage",
+    "name": "${setup_namespace_lowercase}/sitepackage",
     "type": "typo3-cms-extension",
     "description": "Base extension for project ${setup_projectname}",
     "license": [
@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "${setup_namespace_uppercase}\\\\Sitepackage\\\\": "Classes/"
+            "${setup_namespace}\\\\Sitepackage\\\\": "Classes/"
         }
     },
     "extra": {

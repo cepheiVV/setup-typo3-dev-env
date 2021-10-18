@@ -11,7 +11,7 @@ $EM_CONF[$_EXTKEY] = [
     ],
     'autoload' => [
         'psr-4' => [
-            '${setup_namespace_uppercase}\\\\Sitepackage\\\\' => 'Classes'
+            '${setup_namespace}\\\\Sitepackage\\\\' => 'Classes'
         ],
     ],
     'state' => 'stable',

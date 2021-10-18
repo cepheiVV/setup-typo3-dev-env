@@ -116,14 +116,8 @@ ask_basedirectory() {
 ask_newbasedirectory() {
    printf "${NOTE}Enter new path name (relative to current):${NC}"
    read -r -p "${pwd}/" setup_basedirectory
-
-   if [[ $setup_basedirectory =~ [A-Z] ]] ; then
-      printf "${WARNING}Only use lowercase letters!${NC}"
-      ask_newbasedirectory
-   fi
-
-   if ! [[ $setup_basedirectory =~ ^[a-z0-9]+$ ]] ; then
-      printf "${WARNING}Don't use spaces or special chars!${NC}"
+   if ! [[ $setup_basedirectory =~ ^[0-9a-zA-Z._-/]+$ ]] ; then
+      printf "${WARNING}Please, don't use spaces or special chars!${NC}"
       ask_newbasedirectory
    fi
 }
@@ -147,18 +141,12 @@ ask_projectname() {
 }
 
 ask_namespace() {
-    printf "${INPUT}Set the vendor name of the client or project in lowercase characters.${NC}"
-    printf "${INPUT}Namespace (max 4 characters):${NC}"
-    read -r -n 4 setup_namespace
-    setup_namespace_uppercase=$(tr '[:lower:]' '[:upper:]' <<< $setup_namespace)
+    printf "${INPUT}Please enter vendor name (used in namespace) of the client or project:${NC}"
+    read -r setup_namespace
+    setup_namespace_lowercase=$(tr '[:upper:]' '[:lower:]' <<< $setup_namespace)
 
-    if [[ $setup_projectname =~ [A-Z] ]] ; then
-        printf "${WARNING}Only use lowercase letters!${NC}"
-        ask_namespace
-    fi
-
-    if ! [[ $setup_projectname =~ ^[a-z_0-9]+$ ]] ; then
-        printf "${WARNING}Don't use spaces or special chars other than underscore!${NC}"
+    if ! [[ $setup_projectname =~ ^[a-zA-Z0-9]+$ ]] ; then
+        printf "${WARNING}Please, don't use spaces or special characters!${NC}"
         ask_namespace
     fi
     return
@@ -188,7 +176,7 @@ ask_confirmsetup() {
     printf "${NOTE}TYPO3 Version: ${setup_typo3version_minor}${NC}"
     printf "${NOTE}Directory: ${setup_basedirectory}${NC}"
     printf "${NOTE}Project name: ${setup_projectname}${NC}"
-    printf "${NOTE}Project namespace: ${setup_namespace_uppercase}${NC}"
+    printf "${NOTE}Project namespace: ${setup_namespace}${NC}"
     printf "${NOTE}Port: ${setup_port}${NC}"
     printf "${WARNING}.ddev will be setup in ${pwd}/${setup_basedirectory}${NC}"
     display_optional_extensions

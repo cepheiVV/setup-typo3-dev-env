@@ -1,5 +1,5 @@
 {
-   "name": "${setup_namespace}/${setup_projectname}",
+   "name": "${setup_namespace_lowercase}/${setup_projectname}",
    "description": "Main configuration for ${setup_projectname} with TYPO3 v${setup_typo3version_minor}",
    "type": "project",
    "repositories": [
@@ -13,7 +13,7 @@
    ],
    "require": {
        "helhum/typo3-secure-web": "^0.2.9",
-       "${setup_namespace}/sitepackage": "^1",
+       "${setup_namespace_lowercase}/sitepackage": "^1",
        "typo3/cms-about": "^${setup_typo3version_minor}",
        "typo3/cms-adminpanel": "^${setup_typo3version_minor}",
        "typo3/cms-belog": "^${setup_typo3version_minor}",
@@ -36,7 +36,7 @@
    },
    "autoload": {
        "psr-4": {
-           "${setup_namespace_uppercase}\\\\Sitepackage\\\\": "packages/sitepackage/Classes/"
+           "${setup_namespace}\\\\Sitepackage\\\\": "packages/sitepackage/Classes/"
        }
    },
    "extra": {
