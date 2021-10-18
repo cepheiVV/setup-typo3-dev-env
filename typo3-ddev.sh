@@ -147,7 +147,7 @@ ask_projectname() {
 }
 
 ask_namespace() {
-    printf "${INPUT}Set the namespace of the client or project in lowercase characters.${NC}"
+    printf "${INPUT}Set the vendor name of the client or project in lowercase characters.${NC}"
     printf "${INPUT}Namespace (max 4 characters):${NC}"
     read -r -n 4 setup_namespace
     setup_namespace_uppercase=$(tr '[:lower:]' '[:upper:]' <<< $setup_namespace)
