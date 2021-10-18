@@ -9,13 +9,6 @@
         "TYPO3 CMS"
     ],
     "version": "1.1.0",
-    "authors": [
-        {
-            "name": "Patrick Crausaz",
-            "email": "info@its-crausaz.ch",
-            "homepage": "https://its-crausaz.ch/"
-        }
-    ],
     "require": {
         "typo3/cms-core": "^${setup_typo3version_minor}"
     },

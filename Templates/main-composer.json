@@ -44,11 +44,5 @@
            "root-dir": "typo3-secure-web",
            "web-dir": "../public_html"
        }
-   },
-   "authors": [
-       {
-           "name": "Patrick Crausaz",
-           "email": "crausaz.patrick@gmail.com"
-       }
-   ]
+   }
 }

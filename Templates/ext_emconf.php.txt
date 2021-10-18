@@ -1,27 +1,22 @@
 <?php
 
-    $EM_CONF[$_EXTKEY] = [
-        'title' => 'Sitepackage Main',
-        'description' => 'Base extension for project: ${setup_projectname}',
-        'category' => 'templates',
-        'constraints' => [
-            'depends' => [
-                'typo3' => '${setup_typo3version_minor}.0-${setup_typo3version_minor}.99',
-                'fluid_styled_content' => '${setup_typo3version_minor}.0-${setup_typo3version_minor}.99',
-                'rte_ckeditor' => '${setup_typo3version_minor}.0-${setup_typo3version_minor}.99'
-            ]
+$EM_CONF[$_EXTKEY] = [
+    'title' => 'Sitepackage',
+    'description' => 'Base extension for project: ${setup_projectname}',
+    'category' => 'templates',
+    'constraints' => [
+        'depends' => [
+            'typo3' => '${setup_typo3version_minor}'
+        ]
+    ],
+    'autoload' => [
+        'psr-4' => [
+            '${setup_namespace_uppercase}\\\\Sitepackage\\\\' => 'Classes'
         ],
-        'autoload' => [
-            'psr-4' => [
-                '${setup_namespace_uppercase}\\\\Sitepackage\\\\' => 'Classes'
-            ],
-        ],
-        'state' => 'stable',
-        'uploadfolder' => 0,
-        'createDirs' => '',
-        'clearCacheOnLoad' => 1,
-        'author' => 'Patrick crausaz',
-        'author_email' => 'info@its-crausaz.ch',
-        'author_company' => 'ITS Crausaz',
-        'version' => '1.1.0',
-    ];
+    ],
+    'state' => 'stable',
+    'uploadfolder' => 0,
+    'createDirs' => '',
+    'clearCacheOnLoad' => 1,
+    'version' => '1.1.0',
+];
