@@ -215,6 +215,13 @@ install_optional_extensions () {
    do
       printf "${NOTE}Installing optional extension: $EXTENSION${NC}${NC}"
       composer req $EXTENSION
+
+      if [[ "$EXTENSION" == "bk2k/bootstrap-package" ]] ; then
+         printf "${WARNING}Adding bootstrap template to typoscript!${NC}"
+         sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/constants.typoscript'" packages/sitepackage/Configuration/TypoScript/constants.typoscript
+         sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/setup.typoscript'" packages/sitepackage/Configuration/TypoScript/setup.typoscript
+      fi
+
    done
 }
 
@@ -372,7 +379,9 @@ touch Configuration/TsConfig/User/admins.tsconfig
 touch Configuration/TsConfig/User/editors.tsconfig
 touch Configuration/TsConfig/User/everyone.tsconfig
 touch Configuration/TypoScript/constants.typoscript
+echo -en '\n' > Configuration/TypoScript/constants.typoscript
 touch Configuration/TypoScript/setup.typoscript
+echo -en '\n' > Configuration/TypoScript/setup.typoscript
 touch Configuration/TypoScript/Includes/config.typoscript
 touch Configuration/TypoScript/Includes/page.typoscript
 touch Configuration/TypoScript/Includes/getContent.typoscript
