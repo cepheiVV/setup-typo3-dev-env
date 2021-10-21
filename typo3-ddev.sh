@@ -361,7 +361,6 @@ touch composer.json
 touch ext_emconf.php
 touch ext_tables.php
 touch ext_localconf.php
-touch Classes/Hooks/TsTemplateHook.php
 touch Configuration/RTE/Default.yaml
 touch Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts.tsconfig
 touch Configuration/TsConfig/Page/All.tsconfig
@@ -396,11 +395,6 @@ printf "${SUCCESS} - ext_emconf.php of base extension created${NC}"
 #write ext_localconf.php
 expandVarsStrict< "${SCRIPT_DIR}/templates/ext_localconf.php.txt" > ext_localconf.php
 printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
-
-
-# write Classes/Hooks/TsTemplateHook.php
-expandVarsStrict< "${SCRIPT_DIR}/templates/TsTemplateHook.php.txt" > Classes/Hooks/TsTemplateHook.php
-printf "${SUCCESS} - Classes/Hooks/TsTemplateHook.php of base extension created${NC}"
 
 
 # write Configuration/TypoScript/setup.typoscript
@@ -499,6 +493,11 @@ generate_password
 ddev exec ./typo3_app/vendor/bin/typo3cms install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
 ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
 
+# add template record
+ddev exec mysql --user=db --password=db db << EOF
+INSERT INTO sys_template (pid, title, sitetitle, root, clear, constants, config) VALUES (1, 'Bootstrap Package', '${setup_projectname}', 1, 3, "@import 'EXT:sitepackage/Configuration/TypoScript/constants.typoscript'", "@import 'EXT:sitepackage/Configuration/TypoScript/setup.typoscript'");
+EOF
+printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 
 
 #
@@ -511,6 +510,8 @@ ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
 ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
+
+
 
 #
 # Add home page to db table:pages

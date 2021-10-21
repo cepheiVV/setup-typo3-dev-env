@@ -6,14 +6,6 @@ defined('TYPO3_MODE') || die();
  */
 $GLOBALS['TYPO3_CONF_VARS']['RTE']['Presets']['sitepackage'] = 'EXT:sitepackage/Configuration/RTE/Default.yaml';
 
-/******************************
- * Register TypoScript hook
- * for automatic inclusion
- * of our setup & constants.
- ******************************/
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['Core/TypoScript/TemplateService']['runThroughTemplatesPostProcessing'][1501684692] =
-    \\${setup_namespace}\Sitepackage\Hooks\TsTemplateHook::class . '->addTypoScriptTemplate';
-
 /***************
  * PageTS
  ***************/
