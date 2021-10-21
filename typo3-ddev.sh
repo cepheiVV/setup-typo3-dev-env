@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Version 1.1.1
+# Version 1.1.2
 #
 
 #
@@ -114,7 +114,7 @@ ask_basedirectory() {
 }
 
 ask_newbasedirectory() {
-   printf "${NOTE}Enter new path name (relative to current):${NC}"
+   printf "${NOTE}Enter new path name (relative to current - ${INPUT}to move up use ../${NOTE}):${NC}"
    read -r -p "${pwd}/" setup_basedirectory
    if ! [[ $setup_basedirectory =~ ^[a-zA-Z_0-9\/\.]+$ ]] ; then
       printf "${WARNING}Please, don't use spaces or special chars!${NC}"
@@ -186,7 +186,7 @@ ask_confirmsetup() {
     ask_continue
     if [[ $ok =~ 0 ]] ; then
         ask_typo3version_options
-        ask_basedirectory
+        ask_newbasedirectory
         ask_projectname
         ask_namespace
         ask_port
@@ -303,7 +303,7 @@ fi
 pwd=$(pwd)
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ask_typo3version_options
-ask_basedirectory
+ask_newbasedirectory
 ask_projectname
 ask_namespace
 ask_port
@@ -497,14 +497,11 @@ touch AdditionalConfiguration.php
 
 EOM
 
-
-
-cd ../../../../
+cd ../../../
 printf "${NOTE}Starting up ddev${NC}"
 printf "${WARNING}Docker must be running at this point!${NC}"
 cd $setup_basedirectory
 ddev start
-
 
 
 
