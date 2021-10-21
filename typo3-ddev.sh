@@ -92,27 +92,6 @@ ask_typo3version_options() {
     done
 }
 
-
-ask_basedirectory() {
-    printf "${NOTE}Current directory: ${WARNING}${pwd}${NC}"
-    printf "${INPUT}Do you want to use current directory as an installation path? [Y/n]${NC}"
-    read -r i
-    case $i in
-        [nN])
-            ok=1
-            ;;
-        *)
-            ok=0
-            ;;
-    esac
-
-    if [[ $ok =~ 0 ]] ; then
-      setup_basedirectory="."
-    else
-      ask_newbasedirectory
-    fi
-}
-
 ask_newbasedirectory() {
    printf "${NOTE}Enter new path name (relative to current - ${INPUT}to move up use ../${NOTE}):${NC}"
    read -r -p "${pwd}/" setup_basedirectory
@@ -142,13 +121,16 @@ ask_projectname() {
 
 ask_namespace() {
     printf "${INPUT}Please enter vendor name (used in namespace) of the client or project:${NC}"
-    read -r setup_namespace
-    setup_namespace_lowercase=$(tr '[:upper:]' '[:lower:]' <<< $setup_namespace)
+    read -r  -p "Enter vendor [ITSC]: " setup_namespace
+    setup_namespace=${setup_namespace:-ITSC}
 
-    if ! [[ $setup_projectname =~ ^[a-zA-Z0-9]+$ ]] ; then
+    if ! [[ $setup_namespace =~ ^[a-zA-Z0-9]+$ ]] ; then
         printf "${WARNING}Please, don't use spaces or special characters!${NC}"
         ask_namespace
     fi
+
+    setup_namespace_lowercase=$(tr '[:upper:]' '[:lower:]' <<< $setup_namespace)
+
     return
 }
 
