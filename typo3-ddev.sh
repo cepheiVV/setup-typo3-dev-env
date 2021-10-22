@@ -44,7 +44,7 @@ OPTIONAL_EXTENSIONS_INSTALL=()
 # helper functions
 # --------------------------------------
 ask_continue () {
-    printf "${INPUT}Continue? [y/n]: ${NC}"
+    printf "${INPUT}Continue? [y/N]: ${NC}"
     read -r i
     case $i in
         [yY])
