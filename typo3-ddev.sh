@@ -251,7 +251,7 @@ ask_pages_install () {
 #
 # init
 # --------------------------------------
-printf "${NOTE}Preparing to spin up a new ddev environment with 🔐 TYPO3 secure web${NC}"
+printf "${NOTE}Preparing to spin up a new TYPO3 website with ddev and 🔐 typo3-secure-web${NC}"
 printf "${NOTE}We will ask you a series of questions about your project,${NC}"
 printf "${NOTE}prepare a config, and launch it.${NC}"
 ask_continue
