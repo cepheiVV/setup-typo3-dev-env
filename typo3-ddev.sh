@@ -99,6 +99,13 @@ ask_newbasedirectory() {
       printf "${WARNING}Please, don't use spaces or special chars!${NC}"
       ask_newbasedirectory
    fi
+
+   cur_dir="${pwd}/"
+   mkdir -p $setup_basedirectory
+
+   abs_setup_basedirectory="$(cd "$(dirname "${cur_dir}/${setup_basedirectory}")"; pwd)/$(basename "${cur_dir}/${setup_basedirectory}")"
+   printf "${SUCCESS}Created directory ${abs_setup_basedirectory} !${NC}"
+   cd "${cur_dir}"
 }
 
 ask_projectname() {
