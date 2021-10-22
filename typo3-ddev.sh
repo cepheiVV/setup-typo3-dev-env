@@ -163,11 +163,11 @@ ask_confirmsetup() {
     printf "${NOTE}Your setup is:${NC}"
     printf "${NOTE}- - - - - - - - -${NC}"
     printf "${NOTE}TYPO3 Version: ${setup_typo3version_minor}${NC}"
-    printf "${NOTE}Directory: ${setup_basedirectory}${NC}"
+    printf "${NOTE}Directory: ${abs_setup_basedirectory}${NC}"
     printf "${NOTE}Project name: ${setup_projectname}${NC}"
     printf "${NOTE}Project namespace: ${setup_namespace}${NC}"
     printf "${NOTE}Port: ${setup_port}${NC}"
-    printf "${WARNING}.ddev will be setup in ${pwd}/${setup_basedirectory}${NC}"
+    printf "${WARNING}.ddev will be setup in ${pwd}/${abs_setup_basedirectory}${NC}"
     display_optional_extensions
     if [ "$install_pages" = true ] ; then
       echo 'Add few sample pages'
