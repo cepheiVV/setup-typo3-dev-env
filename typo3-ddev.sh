@@ -313,9 +313,8 @@ ask_confirmsetup
 # start to setup .ddev
 # --------------------------------------
 printf "${SUCCESS}Starting to setup .ddev!${NC}"
-printf "${NOTE} - Creating base directory ./${setup_basedirectory} ${NC}"
-mkdir -p $setup_basedirectory
-cd $setup_basedirectory
+printf "${NOTE} - Switching to base directory ./${abs_setup_basedirectory} ${NC}"
+cd "${abs_setup_basedirectory}"
 
 printf "${NOTE} - Initializing ddev ${NC}"
 ddev config --project-name $setup_projectname
@@ -489,10 +488,9 @@ touch AdditionalConfiguration.php
 
 EOM
 
-cd ../../../
 printf "${NOTE}Starting up ddev${NC}"
 printf "${WARNING}Docker must be running at this point!${NC}"
-cd $setup_basedirectory
+cd "${abs_setup_basedirectory}"
 ddev start
 
 
@@ -554,6 +552,9 @@ EOF
    fi
 fi
 
+mkdir -p "${abs_setup_basedirectory}/typo3_app/config/sites/${setup_projectname}"
+expandVarsStrict< "${SCRIPT_DIR}/templates/siteConfiguration.yaml" >  "${abs_setup_basedirectory}/typo3_app/config/sites/${setup_projectname}/config.yaml"
+printf "${NOTE}Created site configuration${NC}"
 
 
 #

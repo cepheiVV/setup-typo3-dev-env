@@ -1,0 +1,21 @@
+base: 'https://${setup_projectname}.ddev.site/'
+baseVariants:
+  -
+    base: 'https://${setup_projectname}.ddev.site/'
+    condition: 'applicationContext == "Development/Local"'
+languages:
+  -
+    title: English
+    enabled: true
+    base: /
+    typo3Language: default
+    locale: en_GB.UTF-8
+    iso-639-1: en
+    websiteTitle: '${setup_projectname}'
+    navigationTitle: English
+    hreflang: en-GB
+    direction: ltr
+    flag: gb
+    languageId: 0
+rootPageId: 1
+websiteTitle: '${setup_projectname}'
