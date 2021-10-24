@@ -88,7 +88,7 @@ ask_typo3version_options() {
     printf "${INPUT}9) 9.5${NC}"
     printf "${INPUT}10) 10.4${NC}"
     printf "${INPUT}11) 11.5${NC}"
-    read -r -p "Enter version [11]" ver
+    read -r -p "Enter version [11]: " ver
     case $ver in
         9)
             setup_typo3version_minor="9.5";;
