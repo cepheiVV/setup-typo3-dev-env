@@ -38,8 +38,14 @@ NC='\033[0m\n' # set no color and line end
 
 
 
-OPTIONAL_EXTENSIONS=("bk2k/bootstrap-package" "mask/mask" "georgringer/news")
+OPTIONAL_EXTENSIONS=("mask/mask" "georgringer/news")
 OPTIONAL_EXTENSIONS_INSTALL=()
+
+
+print_line() {
+   printf "${NOTE}—————————————————————${NC}"
+}
+
 #
 # helper functions
 # --------------------------------------
@@ -164,17 +170,21 @@ ask_port() {
 
 ask_confirmsetup() {
     printf "${NOTE}Your setup is:${NC}"
-    printf "${NOTE}- - - - - - - - -${NC}"
-    printf "${NOTE}TYPO3 Version: ${setup_typo3version_minor}${NC}"
-    printf "${NOTE}Directory: ${abs_setup_basedirectory}${NC}"
-    printf "${NOTE}Project name: ${setup_projectname}${NC}"
-    printf "${NOTE}Project namespace: ${setup_namespace}${NC}"
-    printf "${NOTE}Port: ${setup_port}${NC}"
-    printf "${WARNING}.ddev will be setup in ${pwd}/${abs_setup_basedirectory}${NC}"
+    print_line
+    printf "${NOTE}TYPO3 Version: ${SUCCESS}${setup_typo3version_minor}${NC}"
+    printf "${NOTE}Directory for project and ddev: ${SUCCESS}${abs_setup_basedirectory}${NC}"
+    printf "${NOTE}Project name: ${SUCCESS}${setup_projectname}${NC}"
+    printf "${NOTE}Project namespace: ${SUCCESS}${setup_namespace}${NC}"
+    printf "${NOTE}Port: ${SUCCESS}${setup_port}${NC}"
+
+    if [ $install_bootstrap = true ] ; then
+      printf "${NOTE}Install extension bk2k/bootstrap-package: ✅${NC}"
+    fi
     display_optional_extensions
     if [ "$install_pages" = true ] ; then
-      printf "${NOTE}We will add few sample pages${NC}"
+      printf "${NOTE}We will add few sample pages: ✅${NC}"
     fi
+    print_line
     ask_continue
     if [[ $ok =~ 0 ]] ; then
         ask_typo3version_options
@@ -182,12 +192,26 @@ ask_confirmsetup() {
         ask_projectname
         ask_namespace
         ask_port
+        ask_bootstrap_question
         ask_optional_extensions
         ask_pages_install
         ask_confirmsetup
     fi
 
     return
+}
+
+ask_bootstrap_question () {
+   printf "${INPUT}Do you want to install bk2k/bootstrap-package package? [y/N] : ${NC}"
+    read -r i
+    case $i in
+        [yY])
+            install_bootstrap=true
+            return;;
+        *)
+            install_bootstrap=false
+            return;;
+    esac
 }
 
 # iterating over OPTIONAL_EXTENSIONS and
@@ -198,6 +222,7 @@ ask_optional_extensions () {
       ask_optional_extension $EXTENSION
    done
 }
+
 
 ask_optional_extension () {
     printf "${INPUT}Do you want to install $1 package? [y/N] : ${NC}"
@@ -215,7 +240,7 @@ ask_optional_extension () {
 display_optional_extensions () {
    for EXTENSION in "${OPTIONAL_EXTENSIONS_INSTALL[@]}"
    do
-      printf "${NOTE}Install extension $EXTENSION${NC}"
+      printf "${NOTE}Install extension $EXTENSION: ✅${NC}"
    done
 }
 
@@ -225,21 +250,15 @@ install_optional_extensions () {
    do
       printf "${NOTE}Installing optional extension: $EXTENSION${NC}${NC}"
       composer req $EXTENSION
-
-      if [[ "$EXTENSION" == "bk2k/bootstrap-package" ]] ; then
-         printf "${WARNING}Adding bootstrap template to typoscript!${NC}"
-         sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/constants.typoscript'" packages/sitepackage/Configuration/TypoScript/constants.typoscript
-         sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/setup.typoscript'" packages/sitepackage/Configuration/TypoScript/setup.typoscript
-      fi
-
    done
 }
 
 generate_password() {
-   printf "${NOTE}- - - - - - - - -${NC}"
+   print_line
    printf "${NOTE}Generating admin password${NC}"
    admin_password=`openssl rand -base64 12`
-   printf "${NOTE}- - - - - - - - -${NC}"
+   printf "${NOTE}Password generated 🔐${NC}"
+   print_line
    return
 }
 
@@ -306,6 +325,7 @@ ask_newbasedirectory
 ask_projectname
 ask_namespace
 ask_port
+ask_bootstrap_question
 ask_optional_extensions
 ask_pages_install
 ask_confirmsetup
@@ -414,17 +434,19 @@ printf "${SUCCESS} - ext_emconf.php of base extension created${NC}"
 expandVarsStrict< "${SCRIPT_DIR}/templates/ext_localconf.php.txt" > ext_localconf.php
 printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
 
-
-# write Configuration/TypoScript/setup.typoscript
-/bin/cat <<EOM > Configuration/TypoScript/setup.typoscript
-page = PAGE
-page.10 = TEXT
-page.10.value = Start ${setup_projectname}
-EOM
+#write typoscript templates
+printf "${INFO}Adding typoscript templates${NC}"
+if [ $install_bootstrap = true ] ; then
+   sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/constants.typoscript'" Configuration/TypoScript/constants.typoscript
+   expandVarsStrict< "${SCRIPT_DIR}/templates/setup.bootstrap.typoscript" > Configuration/TypoScript/setup.typoscript
+else
+   expandVarsStrict< "${SCRIPT_DIR}/templates/setup.sitepackage.typoscript" > Configuration/TypoScript/setup.typoscript
+fi
 printf "${SUCCESS} - Configuration/TypoScript/setup.typoscript of base extension created${NC}"
 
 
-cd ../../
+cd "${abs_setup_basedirectory}/typo3_app"
+
 #
 # todo
 # composer packages for8.7 must be different
@@ -446,14 +468,26 @@ printf "${WARNING}Keep calm and have a coffee!${NC}"
 composer install
 printf "${NOTE}Installing additional extensions${NC}"
 
-composer req helhum/typo3-console
 
-if [ "$setup_typo3version_minor" = "11.5" ] ; then
+
+if [ "${setup_typo3version_minor}" = "11.5" ] ; then
+   composer req helhum/typo3-console
    printf "${NOTICE} We cannot install fluidtypo3/vhs or tpwd/ke_search${NC}"
    printf "${NOTICE} as there are no compatible versions yet${NC}"
-else
+elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
+   # we need to specify typo3-console version
+   composer req helhum/typo3-console:^6
    composer req fluidtypo3/vhs
    composer req tpwd/ke_search
+else
+   # we need to specify typo3-console version
+   composer req helhum/typo3-console:^5
+   composer req fluidtypo3/vhs
+   composer req tpwd/ke_search
+fi
+
+if [ $install_bootstrap = true ] ; then
+   composer req bk2k/bootstrap-package
 fi
 
 install_optional_extensions
@@ -503,18 +537,14 @@ ddev start
 #
 # Install TYPO3
 # --------------------------------------
-printf "${NOTE}Installing TYPO3${NC}"
-# todo:
-# only when helhum/typo3-console has been installed
-# https://github.com/TYPO3-Console/TYPO3-Console/issues/825#issuecomment-582397880
-# helhum:  "typo3 v10 support is planned and will be delivered."
 generate_password
+printf "${NOTE}Installing TYPO3${NC}"
 ddev exec ./typo3_app/vendor/bin/typo3cms install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
 ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
 
 # add template record
 
-if [ "$setup_typo3version_minor" = "11.5" ] ; then
+if [ "${setup_typo3version_minor}" = "11.5" ] ; then
 
 ddev exec mysql --user=db --password=db db << EOF
 INSERT INTO sys_template (pid, title, root, clear, constants, config) VALUES (1, 'Bootstrap Package', 1, 3, "@import 'EXT:sitepackage/Configuration/TypoScript/constants.typoscript'", "@import 'EXT:sitepackage/Configuration/TypoScript/setup.typoscript'");
@@ -528,7 +558,6 @@ EOF
 
 fi
 
-
 printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 
 
@@ -537,7 +566,7 @@ printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
 
-if [ "$setup_typo3version_minor" = "11.5" ] ; then
+if [ "${setup_typo3version_minor}" = "11.5" ] ; then
    ddev exec ./typo3_app/vendor/bin/typo3cms install:extensionsetupifpossible
 else
    ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage
@@ -546,8 +575,8 @@ else
    ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
    ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
    ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
-
 fi
+
 
 
 #
@@ -564,15 +593,9 @@ EOF
 # --------------------------------------
 if [ "$install_pages" = true ] ; then
 printf "${NOTE}Adding sample pages${NC}"
-   if [ "$setup_typo3version_minor" = "8.7" ] ; then
-      ddev exec mysql --user=db --password=db db << EOF
-      INSERT INTO pages (\`pid\`, \`title\`, \`doktype\`) VALUES ('1', 'About', '1'),('1', 'Page 1', '1'),('1', 'Page 2', '1');
+ddev exec mysql --user=db --password=db db << EOF
+INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`) VALUES ('1', 'About', '/about', '1'),('1', 'Page 1', '/page-1', '1'),('1', 'Page 2', '/page-2', '1');
 EOF
-   else
-      ddev exec mysql --user=db --password=db db << EOF
-      INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`) VALUES ('1', 'About', '/about', '1'),('1', 'Page 1', '/page-1', '1'),('1', 'Page 2', '/page-2', '1');
-EOF
-   fi
 fi
 
 mkdir -p "${abs_setup_basedirectory}/typo3_app/config/sites/${setup_projectname}"
