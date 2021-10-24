@@ -292,9 +292,10 @@ fi
 
 # check if .ddev is installed before starting this process
 if command -v composer &> /dev/null ; then
-   composer_version = `composer --version | tail -r | tail -n 1 | cut -d " " -f 3  | cut -c 1,3`
-   if [ "$composer_version" -lt 21 ]; then
-      composer_version_string = `composer --version | tail -r | tail -n 1 | cut -d " " -f 3`
+   composer_version=`composer --version | tail -r | tail -n 1 | cut -d " " -f 3  | cut -c 1,3`
+
+   if [ $composer_version -lt 21 ]; then
+      composer_version_string=`composer --version | tail -r | tail -n 1 | cut -d " " -f 3`
       printf "${WARNING}Composer must be at least version 2.1, and you have ${composer_version_string}${NC}"
       printf "${WARNING}try running ${SUCCESS}composer self-update ${NC}"
       exit 1
