@@ -291,6 +291,23 @@ if [[ $ok =~ 0 ]] ; then
 fi
 
 # check if .ddev is installed before starting this process
+if command -v composer &> /dev/null ; then
+   composer_version = `composer --version | tail -r | tail -n 1 | cut -d " " -f 3  | cut -c 1,3`
+   if [ "$composer_version" -lt 21 ]; then
+      composer_version_string = `composer --version | tail -r | tail -n 1 | cut -d " " -f 3`
+      printf "${WARNING}Composer must be at least version 2.1, and you have ${composer_version_string}${NC}"
+      printf "${WARNING}try running ${SUCCESS}composer self-update ${NC}"
+      exit 1
+   else
+      printf "${SUCCESS}composer found and is at least in version 2.1${NC}"
+   fi
+else
+  printf "${WARNING}No composer installed!${NC}"
+  exit 1
+fi
+
+
+# check if .ddev is installed before starting this process
 if command -v ddev &> /dev/null ; then
   printf "${SUCCESS}ddev found${NC}"
 else
@@ -448,14 +465,6 @@ printf "${SUCCESS} - Configuration/TypoScript/setup.typoscript of base extension
 
 cd "${abs_setup_basedirectory}/typo3_app"
 
-#
-# todo
-# composer packages for8.7 must be different
-# not all packages supported >> test
-#
-# for 8.7 use:
-# composer require "typo3/cms-about:^8.7" "typo3/cms-adminpanel:^8.7" "typo3/cms-backend:^8.7" "typo3/cms-belog:^8.7" "typo3/cms-beuser:^8.7" "typo3/cms-core:^8.7" "typo3/cms-extbase:^8.7" "typo3/cms-extensionmanager:^8.7" "typo3/cms-filelist:^8.7" "typo3/cms-fluid:^8.7" "typo3/cms-fluid-styled-content:^8.7" "typo3/cms-form:^8.7" "typo3/cms-frontend:^8.7" "typo3/cms-impexp:^8.7" "typo3/cms-info:^8.7" "typo3/cms-install:^8.7" "typo3/cms-lowlevel:^8.7" "typo3/cms-opendocs:^8.7" "typo3/cms-recordlist:^8.7" "typo3/cms-recycler:^8.7" "typo3/cms-reports:^8.7" "typo3/cms-rte-ckeditor:^8.7" "typo3/cms-scheduler:^8.7" "typo3/cms-setup:^8.7" "typo3/cms-tstemplate:^8.7" "typo3/cms-viewpage:^8.7"
-#
 touch composer.json
 # write composer.json
 expandVarsStrict< "${SCRIPT_DIR}/templates/main-composer.json" > composer.json
