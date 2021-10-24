@@ -182,9 +182,7 @@ ask_confirmsetup() {
       printf "${NOTE}Install extension bk2k/bootstrap-package: ✅${NC}"
     fi
     display_optional_extensions
-    if [ "$install_pages" = true ] ; then
-      printf "${NOTE}We will add few sample pages: ✅${NC}"
-    fi
+    printf "${NOTE}We will add few sample pages: ✅${NC}"
     print_line
     ask_continue
     if [[ $ok =~ 0 ]] ; then
@@ -195,7 +193,6 @@ ask_confirmsetup() {
         ask_port
         ask_bootstrap_question
         ask_optional_extensions
-        ask_pages_install
         ask_confirmsetup
     fi
 
@@ -262,20 +259,6 @@ generate_password() {
    print_line
    return
 }
-
-ask_pages_install () {
-    printf "${INPUT}Do you want us to add few (3) sample pages? [y/N] : ${NC}"
-    read -r i
-    case $i in
-        [yY])
-            install_pages=true
-            return;;
-        *)
-            install_pages=false
-            return;;
-    esac
-}
-
 
 
 #
@@ -346,7 +329,6 @@ ask_namespace
 ask_port
 ask_bootstrap_question
 ask_optional_extensions
-ask_pages_install
 ask_confirmsetup
 
 
@@ -583,20 +565,20 @@ fi
 #
 # Add home page to db table:pages
 # --------------------------------------
-printf "${NOTE}Adding Home page${NC}"
-ddev exec mysql --user=db --password=db db << EOF
-TRUNCATE pages;
-INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`, \`is_siteroot\`) VALUES ('0', 'Home', '/', '1', '1');
-EOF
-
-#
-# Optionally add few pages to table:pages
-# --------------------------------------
-if [ "$install_pages" = true ] ; then
 printf "${NOTE}Adding sample pages${NC}"
 ddev exec mysql --user=db --password=db db << EOF
-INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`) VALUES ('1', 'About', '/about', '1'),('1', 'Page 1', '/page-1', '1'),('1', 'Page 2', '/page-2', '1');
+TRUNCATE pages;
+INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`, \`is_siteroot\`) VALUES ('0', 'Home', '/', '1', '1'),('1', 'About', '/about', '1', '0'),('1', 'Page 1', '/page-1', '1', '0'),('1', 'Page 2', '/page-2', '1', '0');
 EOF
+
+if [ $install_bootstrap = true ] ; then
+
+ddev exec mysql --user=db --password=db db << EOF
+UPDATE pages
+SET backend_layout = "pagets__default", backend_layout_next_level = "pagets__2_columns"
+WHERE uid = 1;
+EOF
+printf "${NOTE}Updated layout fields for sample pages${NC}"
 fi
 
 mkdir -p "${abs_setup_basedirectory}/typo3_app/config/sites/${setup_projectname}"
