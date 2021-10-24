@@ -34,6 +34,7 @@ NOTE='\033[0;36m' #cyan
 WARNING='\033[1;31m' #red
 INPUT='\033[0;35m' #purple
 SUCCESS='\033[0;32m' #green
+INFO='\033[0;34m' #blue
 NC='\033[0m\n' # set no color and line end
 
 
@@ -435,7 +436,7 @@ expandVarsStrict< "${SCRIPT_DIR}/templates/ext_localconf.php.txt" > ext_localcon
 printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
 
 #write typoscript templates
-printf "${INFO}Adding typoscript templates${NC}"
+printf "${INFO} - Adding typoscript templates${NC}"
 if [ $install_bootstrap = true ] ; then
    sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/constants.typoscript'" Configuration/TypoScript/constants.typoscript
    expandVarsStrict< "${SCRIPT_DIR}/templates/setup.bootstrap.typoscript" > Configuration/TypoScript/setup.typoscript
