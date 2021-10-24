@@ -436,7 +436,7 @@ expandVarsStrict< "${SCRIPT_DIR}/templates/ext_localconf.php.txt" > ext_localcon
 printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
 
 #write typoscript templates
-printf "${INFO} - Adding typoscript templates${NC}"
+printf "${SUCCESS} - Adding typoscript templates${NC}"
 if [ $install_bootstrap = true ] ; then
    sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/constants.typoscript'" Configuration/TypoScript/constants.typoscript
    expandVarsStrict< "${SCRIPT_DIR}/templates/setup.bootstrap.typoscript" > Configuration/TypoScript/setup.typoscript
