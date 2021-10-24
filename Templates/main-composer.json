@@ -12,7 +12,7 @@
        }
    ],
    "require": {
-       "helhum/typo3-secure-web": "^0.2.9",
+       "helhum/typo3-secure-web": "^0.3.0",
        "${setup_namespace_lowercase}/sitepackage": "^1",
        "typo3/cms-about": "^${setup_typo3version_minor}",
        "typo3/cms-adminpanel": "^${setup_typo3version_minor}",

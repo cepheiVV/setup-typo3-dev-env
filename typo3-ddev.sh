@@ -77,19 +77,22 @@ expandVarsStrict(){
 
 ask_typo3version_options() {
     PS3="Set the desired TYPO3 version: "
-    select setup_typo3version in 8.7 9.5 10.4; do
-        case $setup_typo3version in
-            8.7)
-               setup_typo3version_minor="8.7";;
-            9.5)
-               setup_typo3version_minor="9.5";;
-            10.4)
-               setup_typo3version_minor="10.4";;
-            *)
-               echo "Invalid option";;
-         esac
-      return
-    done
+
+    printf "${INPUT}Select typo3 version:${NC}"
+    printf "${INPUT}9) 9.5${NC}"
+    printf "${INPUT}10) 10.4${NC}"
+    printf "${INPUT}11) 11.5${NC}"
+    read -r -p "Enter version [10]" ver
+    case $ver in
+        9)
+            setup_typo3version_minor="9.5";;
+        10)
+            setup_typo3version_minor="10.4";;
+        11)
+            setup_typo3version_minor="11.5";;
+        *)
+            setup_typo3version_minor="10.4";;
+    esac
 }
 
 ask_newbasedirectory() {
@@ -170,7 +173,7 @@ ask_confirmsetup() {
     printf "${WARNING}.ddev will be setup in ${pwd}/${abs_setup_basedirectory}${NC}"
     display_optional_extensions
     if [ "$install_pages" = true ] ; then
-      echo 'Add few sample pages'
+      printf "${NOTE}We will add few sample pages${NC}"
     fi
     ask_continue
     if [[ $ok =~ 0 ]] ; then
@@ -442,14 +445,16 @@ printf "${WARNING}This may take a while!${NC}"
 printf "${WARNING}Keep calm and have a coffee!${NC}"
 composer install
 printf "${NOTE}Installing additional extensions${NC}"
-composer req fluidtypo3/vhs
-composer req teaminmedias-pluswerk/ke_search
-if [ "$setup_typo3version_minor" = "10.4" ] ; then
-   composer req helhum/typo3-console:^6
-else
-   composer req helhum/typo3-console:^5
-fi
 
+composer req helhum/typo3-console
+
+if [ "$setup_typo3version_minor" = "11.5" ] ; then
+   printf "${NOTICE} We cannot install fluidtypo3/vhs or tpwd/ke_search${NC}"
+   printf "${NOTICE} as there are no compatible versions yet${NC}"
+else
+   composer req fluidtypo3/vhs
+   composer req tpwd/ke_search
+fi
 
 install_optional_extensions
 
@@ -508,9 +513,22 @@ ddev exec ./typo3_app/vendor/bin/typo3cms install:setup --no-interaction --admin
 ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
 
 # add template record
+
+if [ "$setup_typo3version_minor" = "11.5" ] ; then
+
+ddev exec mysql --user=db --password=db db << EOF
+INSERT INTO sys_template (pid, title, root, clear, constants, config) VALUES (1, 'Bootstrap Package', 1, 3, "@import 'EXT:sitepackage/Configuration/TypoScript/constants.typoscript'", "@import 'EXT:sitepackage/Configuration/TypoScript/setup.typoscript'");
+EOF
+
+else
+
 ddev exec mysql --user=db --password=db db << EOF
 INSERT INTO sys_template (pid, title, sitetitle, root, clear, constants, config) VALUES (1, 'Bootstrap Package', '${setup_projectname}', 1, 3, "@import 'EXT:sitepackage/Configuration/TypoScript/constants.typoscript'", "@import 'EXT:sitepackage/Configuration/TypoScript/setup.typoscript'");
 EOF
+
+fi
+
+
 printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 
 
@@ -518,13 +536,18 @@ printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 # Activate extensions
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate recycler
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
-ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
 
+if [ "$setup_typo3version_minor" = "11.5" ] ; then
+   ddev exec ./typo3_app/vendor/bin/typo3cms install:extensionsetupifpossible
+else
+   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage
+   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate recycler
+   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
+   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
+   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
+   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
+
+fi
 
 
 #
