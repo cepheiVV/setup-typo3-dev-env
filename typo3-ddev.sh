@@ -327,6 +327,7 @@ ddev config --project-type php
 ddev config --http-port $setup_port
 ddev config --docroot public_html --create-docroot
 ddev config --project-type typo3
+ddev config --php-version 7.4
 
 
 
