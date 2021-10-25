@@ -247,7 +247,7 @@ install_optional_extensions () {
    for EXTENSION in "${OPTIONAL_EXTENSIONS_INSTALL[@]}"
    do
       printf "${NOTE}Installing optional extension: $EXTENSION${NC}${NC}"
-      composer req $EXTENSION
+      ddev composer req $EXTENSION -d typo3_app
    done
 }
 
@@ -274,24 +274,6 @@ if [[ $ok =~ 0 ]] ; then
 fi
 
 # check if .ddev is installed before starting this process
-if command -v composer &> /dev/null ; then
-   composer_version=`composer --version | tail -r | tail -n 1 | cut -d " " -f 3  | cut -c 1,3`
-
-   if [ $composer_version -lt 21 ]; then
-      composer_version_string=`composer --version | tail -r | tail -n 1 | cut -d " " -f 3`
-      printf "${WARNING}Composer must be at least version 2.1, and you have ${composer_version_string}${NC}"
-      printf "${WARNING}try running ${SUCCESS}composer self-update ${NC}"
-      exit 1
-   else
-      printf "${SUCCESS}composer found and is at least in version 2.1${NC}"
-   fi
-else
-  printf "${WARNING}No composer installed!${NC}"
-  exit 1
-fi
-
-
-# check if .ddev is installed before starting this process
 if command -v ddev &> /dev/null ; then
   printf "${SUCCESS}ddev found${NC}"
 else
@@ -313,7 +295,6 @@ else
     printf "${WARNING}Make sure Docker is installed!${NC}"
     exit 1
 fi
-
 
 
 
@@ -458,29 +439,29 @@ printf "${SUCCESS} - Main composer.json of the project created${NC}"
 printf "${NOTE}Starting composer install${NC}"
 printf "${WARNING}This may take a while!${NC}"
 printf "${WARNING}Keep calm and have a coffee!${NC}"
-composer install
+ddev composer install  -d typo3_app
 printf "${NOTE}Installing additional extensions${NC}"
 
 
 
 if [ "${setup_typo3version_minor}" = "11.5" ] ; then
-   composer req helhum/typo3-console
+   ddev composer req helhum/typo3-console -d typo3_app
    printf "${NOTICE} We cannot install fluidtypo3/vhs or tpwd/ke_search${NC}"
    printf "${NOTICE} as there are no compatible versions yet${NC}"
 elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
    # we need to specify typo3-console version
-   composer req helhum/typo3-console:^6
-   composer req fluidtypo3/vhs
-   composer req tpwd/ke_search
+   ddev composer req helhum/typo3-console:^6 -d typo3_app
+   ddev composer req fluidtypo3/vhs -d typo3_app
+   ddev composer req tpwd/ke_search -d typo3_app
 else
    # we need to specify typo3-console version
-   composer req helhum/typo3-console:^5
-   composer req fluidtypo3/vhs
-   composer req tpwd/ke_search
+   ddev composer req helhum/typo3-console:^5 -d typo3_app
+   ddev composer req fluidtypo3/vhs -d typo3_app
+   ddev composer req tpwd/ke_search -d typo3_app
 fi
 
 if [ $install_bootstrap = true ] ; then
-   composer req bk2k/bootstrap-package
+   ddev composer req bk2k/bootstrap-package  -d typo3_app
 fi
 
 install_optional_extensions
