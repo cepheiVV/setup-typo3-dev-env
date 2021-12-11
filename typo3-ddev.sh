@@ -105,8 +105,13 @@ ask_typo3version_options() {
 ask_newbasedirectory() {
    printf "${NOTE}Enter new path name (relative to current - ${INPUT}to move up use ../${NOTE}):${NC}"
    read -r -p "${pwd}/" setup_basedirectory
-   if ! [[ $setup_basedirectory =~ ^[a-zA-Z_0-9\/\.]+$ ]] ; then
-      printf "${WARNING}Please, don't use spaces or special chars!${NC}"
+   if ! [[ $setup_basedirectory =~ ^[a-zA-Z_0-9\/\.\-]+$ ]] ; then
+      printf "${WARNING}Please, don't use spaces or special chars other than '_' or '-' !${NC}"
+      ask_newbasedirectory
+   fi
+
+   if [ "$(ls -A $setup_basedirectory)" ] ; then
+      printf "${WARNING}The target directory ${setup_basedirectory} is not empty! Please select a different path.${NC}"
       ask_newbasedirectory
    fi
 
@@ -128,7 +133,7 @@ ask_projectname() {
         ask_projectname
     fi
 
-    if ! [[ $setup_projectname =~ ^[a-z_0-9]+$ ]] ; then
+    if ! [[ $setup_projectname =~ ^[a-z_0-9\-]+$ ]] ; then
         printf "${WARNING}Don't use spaces or special chars other than underscore!${NC}"
         ask_projectname
     fi
