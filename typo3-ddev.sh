@@ -427,6 +427,8 @@ else
 fi
 printf "${SUCCESS} - Configuration/TypoScript/setup.typoscript of base extension created${NC}"
 
+cp "${SCRIPT_DIR}/templates/editorconfig"  "${abs_setup_basedirectory}/.editorconfig"
+printf "${SUCCESS} - added .editorconfig ${NC}"
 
 cd "${abs_setup_basedirectory}/typo3_app"
 
