@@ -252,7 +252,22 @@ install_optional_extensions () {
    for EXTENSION in "${OPTIONAL_EXTENSIONS_INSTALL[@]}"
    do
       printf "${NOTE}Installing optional extension: $EXTENSION${NC}${NC}"
-      ddev composer req $EXTENSION -d typo3_app
+
+      if [ "${EXTENSION}" = "mask/mask" ] ; then
+         if [ "${setup_typo3version_minor}" = "9.5" ] ; then
+            ddev composer req $EXTENSION:^4 -d typo3_app
+         else
+            ddev composer req $EXTENSION -d typo3_app
+         fi
+      elif [ "${EXTENSION}" = "georgringer/news" ] ; then
+         if [ "${setup_typo3version_minor}" = "9.5" ] ; then
+            ddev composer req $EXTENSION:^8 -d typo3_app
+         else
+            ddev composer req $EXTENSION -d typo3_app
+         fi
+      else
+         ddev composer req $EXTENSION -d typo3_app
+      fi
    done
 }
 
@@ -454,7 +469,8 @@ printf "${NOTE}Installing additional extensions${NC}"
 
 if [ "${setup_typo3version_minor}" = "11.5" ] ; then
    ddev composer req helhum/typo3-console -d typo3_app
-   printf "${NOTICE} We cannot install fluidtypo3/vhs or tpwd/ke_search${NC}"
+   ddev composer req tpwd/ke_search -d typo3_app
+   printf "${NOTICE} We cannot install fluidtypo3/vhs${NC}"
    printf "${NOTICE} as there are no compatible versions yet${NC}"
 elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
    # we need to specify typo3-console version
@@ -465,11 +481,15 @@ else
    # we need to specify typo3-console version
    ddev composer req helhum/typo3-console:^5 -d typo3_app
    ddev composer req fluidtypo3/vhs -d typo3_app
-   ddev composer req tpwd/ke_search -d typo3_app
+   ddev composer req tpwd/ke_search:^4 -d typo3_app
 fi
 
 if [ $install_bootstrap = true ] ; then
-   ddev composer req bk2k/bootstrap-package  -d typo3_app
+   if [ "${setup_typo3version_minor}" = "9.5" ] ; then
+      ddev composer req bk2k/bootstrap-package:^11  -d typo3_app
+   else
+      ddev composer req bk2k/bootstrap-package  -d typo3_app
+   fi
 fi
 
 install_optional_extensions
@@ -537,18 +557,8 @@ printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 # Activate extensions
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
-
-if [ "${setup_typo3version_minor}" = "11.5" ] ; then
-   ddev exec ./typo3_app/vendor/bin/typo3cms install:extensionsetupifpossible
-else
-   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate sitepackage
-   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate recycler
-   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate opendocs
-   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate ke_search
-   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate scheduler
-   ddev exec ./typo3_app/vendor/bin/typo3cms extension:activate vhs
-fi
-
+ddev exec ./typo3_app/vendor/bin/typo3cms install:generatepackagestates
+ddev exec ./typo3_app/vendor/bin/typo3cms install:extensionsetupifpossible
 
 
 #
