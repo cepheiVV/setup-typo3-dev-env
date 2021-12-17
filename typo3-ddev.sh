@@ -620,7 +620,7 @@ ddev describe
 printf "${SUCCESS}Setup complete!${NC}"
 printf "${NOTE}Open the ddev URL in a browser${NC}"
 printf "${NOTE}Admin user is: admin${NC}"
-printf "${NOTE}Admin password is: $admin_password ${NC}"
+printf "${NOTE}Admin password is: ${admin_password} ${NC}"
 
 printf "${NOTE}and follow the TYPO3 install process.${NC}"
 printf "${SUCCESS}Have fun with your new ddev env!${NC}"
