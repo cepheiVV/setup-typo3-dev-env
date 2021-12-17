@@ -449,6 +449,37 @@ printf "${SUCCESS} - added .editorconfig ${NC}"
 
 cd "${abs_setup_basedirectory}"
 
+/bin/cat <<EOM >.gitignore
+
+node_modules
+npm-debug.log
+.DS_Store
+.vscode/*
+.idea
+
+# TYPO3
+ENABLE_INSTALL_TOOL
+_processed_
+uploads/*
+!/public/*
+/public/index.php
+/public/typo3
+/public/typo3conf
+/public/fileadmin
+/public/typo3temp
+/private/index.php
+/private/typo3conf/ext
+/private/typo3
+/private/typo3temp
+/private/fileadmin
+/var/
+/vendor/
+
+EOM
+
+
+printf "${SUCCESS} - added .gitignore ${NC}"
+
 touch composer.json
 # write composer.json
 expandVarsStrict< "${SCRIPT_DIR}/templates/main-composer.json" > composer.json
