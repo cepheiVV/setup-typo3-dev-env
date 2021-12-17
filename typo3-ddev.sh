@@ -255,18 +255,18 @@ install_optional_extensions () {
 
       if [ "${EXTENSION}" = "mask/mask" ] ; then
          if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-            ddev composer req $EXTENSION:^4 -d typo3_app
+            ddev composer req $EXTENSION:^4
          else
-            ddev composer req $EXTENSION -d typo3_app
+            ddev composer req $EXTENSION
          fi
       elif [ "${EXTENSION}" = "georgringer/news" ] ; then
          if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-            ddev composer req $EXTENSION:^8 -d typo3_app
+            ddev composer req $EXTENSION:^8
          else
-            ddev composer req $EXTENSION -d typo3_app
+            ddev composer req $EXTENSION
          fi
       else
-         ddev composer req $EXTENSION -d typo3_app
+         ddev composer req $EXTENSION
       fi
    done
 }
@@ -345,11 +345,10 @@ printf "${NOTE} - Initializing ddev ${NC}"
 ddev config --project-name $setup_projectname
 ddev config --project-type php
 ddev config --http-port $setup_port
-ddev config --docroot public_html --create-docroot
+ddev config --docroot public --create-docroot
 ddev config --project-type typo3
 ddev config --php-version 7.4
-
-
+ddev config --web-environment="TYPO3_CONTEXT=Development/Local"
 
 
 printf "${NOTE} - Setup project directories ${NC}"
@@ -357,8 +356,6 @@ touch .editorconfig
 touch .gitignore
 mkdir .vscode
 touch .vscode/extensions.json
-mkdir -p typo3_app
-cd typo3_app
 mkdir -p packages
 cd packages
 printf "${SUCCESS} - base file structure created${NC}"
@@ -450,7 +447,7 @@ printf "${SUCCESS} - Configuration/TypoScript/setup.typoscript of base extension
 cp "${SCRIPT_DIR}/templates/editorconfig"  "${abs_setup_basedirectory}/.editorconfig"
 printf "${SUCCESS} - added .editorconfig ${NC}"
 
-cd "${abs_setup_basedirectory}/typo3_app"
+cd "${abs_setup_basedirectory}"
 
 touch composer.json
 # write composer.json
@@ -462,33 +459,33 @@ printf "${SUCCESS} - Main composer.json of the project created${NC}"
 printf "${NOTE}Starting composer install${NC}"
 printf "${WARNING}This may take a while!${NC}"
 printf "${WARNING}Keep calm and have a coffee!${NC}"
-ddev composer install  -d typo3_app
+ddev composer install
 printf "${NOTE}Installing additional extensions${NC}"
 
 
 
 if [ "${setup_typo3version_minor}" = "11.5" ] ; then
-   ddev composer req helhum/typo3-console -d typo3_app
-   ddev composer req tpwd/ke_search -d typo3_app
+   ddev composer req helhum/typo3-console
+   ddev composer req tpwd/ke_search
    printf "${NOTICE} We cannot install fluidtypo3/vhs${NC}"
    printf "${NOTICE} as there are no compatible versions yet${NC}"
 elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
    # we need to specify typo3-console version
-   ddev composer req helhum/typo3-console:^6 -d typo3_app
-   ddev composer req fluidtypo3/vhs -d typo3_app
-   ddev composer req tpwd/ke_search -d typo3_app
+   ddev composer req helhum/typo3-console:^6
+   ddev composer req fluidtypo3/vhs
+   ddev composer req tpwd/ke_search
 else
    # we need to specify typo3-console version
-   ddev composer req helhum/typo3-console:^5 -d typo3_app
-   ddev composer req fluidtypo3/vhs -d typo3_app
-   ddev composer req tpwd/ke_search:^4 -d typo3_app
+   ddev composer req helhum/typo3-console:^5
+   ddev composer req fluidtypo3/vhs
+   ddev composer req tpwd/ke_search:^4
 fi
 
 if [ $install_bootstrap = true ] ; then
    if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-      ddev composer req bk2k/bootstrap-package:^11  -d typo3_app
+      ddev composer req bk2k/bootstrap-package:^11
    else
-      ddev composer req bk2k/bootstrap-package  -d typo3_app
+      ddev composer req bk2k/bootstrap-package
    fi
 fi
 
@@ -498,7 +495,7 @@ install_optional_extensions
 # Prepare TYPO3
 # --------------------------------------
 printf "${NOTE}Preparing TYPO3${NC}"
-cd typo3-secure-web
+cd private
 touch FIRST_INSTALL
 cd typo3conf
 touch AdditionalConfiguration.php
@@ -541,8 +538,8 @@ ddev start
 # --------------------------------------
 generate_password
 printf "${NOTE}Installing TYPO3${NC}"
-ddev exec ./typo3_app/vendor/bin/typo3cms install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
-ddev exec ./typo3_app/vendor/bin/typo3cms install:fixfolderstructure
+ddev exec ./vendor/bin/typo3cms install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
+ddev exec ./vendor/bin/typo3cms install:fixfolderstructure
 
 # add template record
 
@@ -557,8 +554,8 @@ printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 # Activate extensions
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
-ddev exec ./typo3_app/vendor/bin/typo3cms install:generatepackagestates
-ddev exec ./typo3_app/vendor/bin/typo3cms install:extensionsetupifpossible
+#ddev exec ./vendor/bin/typo3cms install:generatepackagestates
+ddev exec ./vendor/bin/typo3cms install:extensionsetupifpossible
 
 
 #
@@ -580,8 +577,8 @@ EOF
 printf "${NOTE}Updated layout fields for sample pages${NC}"
 fi
 
-mkdir -p "${abs_setup_basedirectory}/typo3_app/config/sites/${setup_projectname}"
-expandVarsStrict< "${SCRIPT_DIR}/templates/siteConfiguration.yaml" >  "${abs_setup_basedirectory}/typo3_app/config/sites/${setup_projectname}/config.yaml"
+mkdir -p "${abs_setup_basedirectory}/config/sites/${setup_projectname}"
+expandVarsStrict< "${SCRIPT_DIR}/templates/siteConfiguration.yaml" >  "${abs_setup_basedirectory}/config/sites/${setup_projectname}/config.yaml"
 printf "${NOTE}Created site configuration${NC}"
 
 

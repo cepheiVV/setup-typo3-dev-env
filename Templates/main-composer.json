@@ -41,8 +41,8 @@
    },
    "extra": {
        "typo3/cms": {
-           "root-dir": "typo3-secure-web",
-           "web-dir": "../public_html"
+           "root-dir": "private",
+           "web-dir": "public"
        }
    }
 }
