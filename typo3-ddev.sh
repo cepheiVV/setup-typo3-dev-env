@@ -5,21 +5,6 @@
 #
 
 #
-# todo
-# --------------------------------------
-#  - ask for extension vendor and replace all vendor strings
-#  - automate the TYPO3 installation, so there's no need for FIRST_INSTALL process
-#    with "typo3cms install:setup"
-#  - set a backend admin user
-#    with "typo3cmd backend:createadmin"
-#  - ask for "path" where ddev should be set up
-#  - Get Git host/account name,
-#    then init a new GIT repository and
-#    push it to Bitbucket / GitHub or GitLab
-#  - naming of domain(s)?
-#
-
-#
 # define colors
 # --------------------------------------
 # Black        0;30     Dark Gray     1;30
