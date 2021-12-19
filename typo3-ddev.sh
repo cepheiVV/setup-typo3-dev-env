@@ -491,12 +491,14 @@ printf "${NOTE}Installing additional extensions${NC}"
 
 
 if [ "${setup_typo3version_minor}" = "11.5" ] ; then
+   ddev config --php-version 8.0
    ddev composer req helhum/typo3-console
    ddev composer req tpwd/ke_search
    printf "${NOTICE} We cannot install fluidtypo3/vhs${NC}"
    printf "${NOTICE} as there are no compatible versions yet${NC}"
 elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
    # we need to specify typo3-console version
+   ddev config --php-version 7.4
    ddev composer req helhum/typo3-console:^6
    ddev composer req fluidtypo3/vhs
    ddev composer req tpwd/ke_search
