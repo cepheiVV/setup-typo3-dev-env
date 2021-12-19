@@ -1,0 +1,21 @@
+mod.web_layout.BackendLayouts {
+  404 {
+    title = Sitepackage 404 Page
+    config {
+      backend_layout {
+        colCount = 1
+        rowCount = 1
+        rows {
+          1 {
+            columns {
+              1 {
+                name = Content
+                colPos = 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

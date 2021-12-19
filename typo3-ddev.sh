@@ -364,13 +364,6 @@ mkdir -p Configuration
 mkdir -p Configuration/TCA
 mkdir -p Configuration/TCA/Overrides
 mkdir -p Configuration/RTE
-mkdir -p Configuration/TsConfig
-mkdir -p Configuration/TsConfig/Page
-mkdir -p Configuration/TsConfig/Page/Mod
-mkdir -p Configuration/TsConfig/Page/Mod/WebLayouts
-mkdir -p Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts
-mkdir -p Configuration/TsConfig/Page/Mod/Wizards
-mkdir -p Configuration/TsConfig/User
 mkdir -p Configuration/TypoScript
 mkdir -p Configuration/TypoScript/Extensions
 mkdir -p Configuration/TypoScript/Extensions/FluidStyledContent
@@ -387,21 +380,16 @@ mkdir -p Resources/Public
 mkdir -p Resources/Public/dist
 mkdir -p Resources/Public/Icons
 mkdir -p Resources/Public/JavaScript
+mkdir -p Resources/Public/RTE
+
 
 touch composer.json
 touch ext_emconf.php
 touch ext_tables.php
 touch ext_localconf.php
-touch Configuration/RTE/Default.yaml
-touch Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts.tsconfig
-touch Configuration/TsConfig/Page/All.tsconfig
-touch Configuration/TsConfig/Page/options.tsconfig
-touch Configuration/TsConfig/Page/TCAdefaults.tsconfig
-touch Configuration/TsConfig/Page/TCEFORM.tsconfig
-touch Configuration/TsConfig/Page/TCEMAIN.tsconfig
-touch Configuration/TsConfig/User/admins.tsconfig
-touch Configuration/TsConfig/User/editors.tsconfig
-touch Configuration/TsConfig/User/everyone.tsconfig
+cp "${SCRIPT_DIR}/templates/CustomRte.yaml" Configuration/RTE/CustomRte.yaml
+cp "${SCRIPT_DIR}/templates/CustomRte.css" Resources/Public/RTE/CustomRte.css
+cp -r "${SCRIPT_DIR}/templates/TsConfig" Configuration/
 touch Configuration/TypoScript/constants.typoscript
 echo -en '\n' > Configuration/TypoScript/constants.typoscript
 touch Configuration/TypoScript/setup.typoscript

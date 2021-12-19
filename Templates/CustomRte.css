@@ -1,0 +1,39 @@
+/**************************/
+/**   Those are only example classes!  **/
+/**************************/
+
+.text-center {
+   text-align: center;
+}
+.text-right {
+   text-align: right;
+}
+/**************************/
+/**   Default Buttons    **/
+/**************************/
+a.btn {
+   text-decoration: none;
+   color: black;
+   padding-top: 0.75rem;
+   padding-bottom: 0.75rem;
+   padding-left: 1.5rem;
+   padding-right: 1.5rem;
+   border-radius: 9999px;
+   background-color: gray;
+   transition-property: background-color, border-color, color, fill, stroke;
+   transition-duration: 300ms;
+   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+   min-width: auto;
+   display: inline-block;
+}
+a.btn:hover {
+   color: gray;
+   background-color: black;
+}
+/**************************/
+/**   Active Buttons     **/
+/**************************/
+a.btn.active {
+   background-color: darkgrey;
+   color: #fff;
+}

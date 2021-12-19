@@ -1,0 +1,88 @@
+# # Configure New Content Element wizard
+
+# # https://docs.typo3.org/typo3cms/TSconfigReference/PageTsconfig/Mod.html
+# # "The four default groups are: "common", "special", "forms" and "plugins".
+
+# mod.wizards.newContentElement.wizardItems.common.show =
+# mod.wizards.newContentElement.wizardItems.special.show =
+# mod.wizards.newContentElement.wizardItems.forms.show =
+# mod.wizards.newContentElement.wizardItems.plugins.show =
+# mod.wizards.newContentElement.wizardItems.menu.show =
+# mod.wizards.newContentElement.wizardItems.mask.show =
+
+# mod.wizards.newContentElement.wizardItems.common.header = Klassische Inhaltselemente
+# mod.wizards.newContentElement.wizardItems.mask.header = GDK-Inhaltselemente
+
+# # Columns
+
+# # Presentation
+# [globalVar = GP:colPos==15]
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_presentation)
+# [end]
+
+# # Random image
+# [globalVar = GP:colPos==3]
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_randomimage)
+# [end]
+
+# # Single News or Teaser Text
+# [globalVar = GP:colPos==1]||[globalVar = GP:colPos==2]
+#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(news)
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_teasers)
+# [end]
+
+# # Teaser
+# [globalVar = GP:colPos==2]||[globalVar = GP:colPos==4]||[globalVar = GP:colPos==5]||[globalVar = GP:colPos==6]||[globalVar = GP:colPos==7]||[globalVar = GP:colPos==14]
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_teasers)
+# [end]
+
+# # Identbild
+# [globalVar = GP:colPos==7]
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_imagelandingpage)
+# [end]
+
+# # Lead
+# [globalVar = GP:colPos==16]
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_lead)
+# [end]
+
+# # Contacts
+# [globalVar = GP:colPos==8]||[globalVar = GP:colPos==9]||[globalVar = GP:colPos==10]||[globalVar = GP:colPos==99]
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_contact)
+# [end]
+
+
+# # Content
+# [globalVar = GP:colPos==0]
+#     mod.wizards.newContentElement.wizardItems.common.show := addToList(text,table,uploads)
+#     mod.wizards.newContentElement.wizardItems.special.show := addToList(shortcut)
+#     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_responsiveimage, mask_employees, mask_gallery)
+#     # mod.wizards.newContentElement.wizardItems.plugins.show := addToList(selectedfilesteaser,allfilesteaser,allfiles,createlink)
+# [end]
+
+# # Content Aside: Documents
+# [globalVar = GP:colPos==13]
+#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(createlink)
+#     mod.wizards.newContentElement.wizardItems.common.show := addToList(uploads)
+# [end]
+
+
+# # Content
+# [globalVar = GP:colPos==17]
+#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(allfiles,selectedfiles)
+# [end]
+
+# # Filepool / Stellungnahmen / Stellen
+# [globalVar = GP:colPos==17]
+#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(allfiles,selectedfiles)
+# [end]
+
+# # Suche
+# [globalVar = GP:colPos==18]
+#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(ke_search_pi1,ke_search_pi2)
+# [end]
+
+# # Hidden keywords for ke_search
+# [globalVar = GP:colPos==80]
+#     mod.wizards.newContentElement.wizardItems.common.show := addToList(text)
+# [end]

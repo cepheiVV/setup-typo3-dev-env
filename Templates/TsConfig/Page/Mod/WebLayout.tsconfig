@@ -1,0 +1,13 @@
+mod.web_layout {
+
+   # https://docs.typo3.org/m/typo3/reference-tsconfig/main/en-us/PageTsconfig/Mod.html#menu-functions
+   # mod.web_layout.menu.function.0 = QuickEdit
+   # mod.web_layout.menu.function.1 = Columns
+   # mod.web_layout.menu.function.2 = Languages
+   # mod.web_layout.menu.function.3 = Page information
+
+
+   # https://docs.typo3.org/m/typo3/reference-tsconfig/main/en-us/PageTsconfig/Mod.html#deflangbinding
+   #defLangBinding = 1
+
+}

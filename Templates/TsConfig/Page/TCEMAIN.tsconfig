@@ -1,0 +1,33 @@
+#
+# TCEMAIN
+#
+TCEMAIN {
+
+    # Assign be_group as owner when creating a new page
+    permissions.groupid = 1
+
+    # Set default permission of page owner
+    permissions.user = show,editcontent,edit,delete,new
+
+    # Set default permissin of page usergroup
+    permissions.group = show,editcontent,edit,delete,new
+
+    # Set default permission for everybody else
+    permissions.everybody = show
+
+    # behavior when copying records
+    table {
+        pages {
+          disablePrependAtCopy = 1
+          disableHideAtCopy = 1
+        }
+        tt_content {
+          disablePrependAtCopy = 1
+          disableHideAtCopy = 1
+        }
+        sys_file_metadata {
+          disablePrependAtCopy = 1
+          disableHideAtCopy = 1
+        }
+    }
+}

@@ -1,0 +1,3 @@
+@import 'EXT:sitepackage/Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts/default.tsconfig'
+@import 'EXT:sitepackage/Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts/home.tsconfig'
+@import 'EXT:sitepackage/Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts/404.tsconfig'

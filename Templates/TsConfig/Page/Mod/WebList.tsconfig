@@ -1,0 +1,7 @@
+
+# https://docs.typo3.org/m/typo3/reference-tsconfig/main/en-us/PageTsconfig/Mod.html#menu-functions
+# mod.web_list {
+#  table {
+#    tx_sitepackage_domain_model_content.hideTable = 1
+#  }
+# }
