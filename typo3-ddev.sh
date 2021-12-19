@@ -202,6 +202,15 @@ ask_bootstrap_question () {
     esac
 }
 
+
+ask_repository_question () {
+   printf "${INPUT}What is the remote repository url?${NC}"
+   printf "${INPUT}You can skip it by pressing enter${NC}"
+   printf "${INPUT}If you provide a url, we'll initialize the repo${NC}"
+   printf "${INPUT}and set it as upstream${NC}"
+   read -r repository_url
+}
+
 # iterating over OPTIONAL_EXTENSIONS and
 # assigning to OPTIONAL_EXTENSIONS_INSTALL array
 ask_optional_extensions () {
@@ -308,6 +317,7 @@ fi
 # --------------------------------------
 pwd=$(pwd)
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+ask_repository_question
 ask_typo3version_options
 ask_newbasedirectory
 ask_projectname
@@ -597,6 +607,14 @@ mkdir -p "${abs_setup_basedirectory}/config/sites/${setup_projectname}"
 expandVarsStrict< "${SCRIPT_DIR}/templates/siteConfiguration.yaml" >  "${abs_setup_basedirectory}/config/sites/${setup_projectname}/config.yaml"
 printf "${NOTE}Created site configuration${NC}"
 
+if [ ! -z $repository_url ] ; then
+   printf "${NOTE}Setting up git${NC}"
+   git init
+   git add .
+   git commit -m 'Initial commit'
+   git remote add upstream "${repository_url}"
+   git push --set-upstream upstream main
+fi
 
 #
 # final instructions after install
