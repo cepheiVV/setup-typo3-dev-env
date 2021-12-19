@@ -1,3 +1,4 @@
+
 options {
    # https://docs.typo3.org/m/typo3/reference-tsconfig/main/en-us/UserTsconfig/Options.html#clearcache-all
    clearCache {
@@ -9,7 +10,8 @@ options {
    # https://docs.typo3.org/m/typo3/reference-tsconfig/main/en-us/UserTsconfig/Options.html#file-list
    file_list {
       thumbnail {
-      width = 300
-      height = 300
+         width = 300
+         height = 300
+      }
    }
 }

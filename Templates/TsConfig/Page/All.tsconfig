@@ -1,5 +1,4 @@
 
-
 @import 'EXT:sitepackage/Configuration/TsConfig/Page/Mod/WebLayouts/BackendLayouts.tsconfig'
 @import 'EXT:sitepackage/Configuration/TsConfig/Page/Mod/Wizards/newContentElement.tsconfig'
 @import 'EXT:sitepackage/Configuration/TsConfig/Page/Mod/Shared.tsconfig'
@@ -9,4 +8,3 @@
 @import 'EXT:sitepackage/Configuration/TsConfig/Page/TCEFORM.tsconfig'
 @import 'EXT:sitepackage/Configuration/TsConfig/Page/TCAdefaults.tsconfig'
 @import 'EXT:sitepackage/Configuration/TsConfig/Page/RTE.tsconfig'
-

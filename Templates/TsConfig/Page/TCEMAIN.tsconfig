@@ -9,7 +9,7 @@ TCEMAIN {
     # Set default permission of page owner
     permissions.user = show,editcontent,edit,delete,new
 
-    # Set default permissin of page usergroup
+    # Set default permission of page usergroup
     permissions.group = show,editcontent,edit,delete,new
 
     # Set default permission for everybody else

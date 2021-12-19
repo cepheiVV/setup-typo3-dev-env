@@ -10,8 +10,8 @@
 # mod.wizards.newContentElement.wizardItems.menu.show =
 # mod.wizards.newContentElement.wizardItems.mask.show =
 
-# mod.wizards.newContentElement.wizardItems.common.header = Klassische Inhaltselemente
-# mod.wizards.newContentElement.wizardItems.mask.header = GDK-Inhaltselemente
+# mod.wizards.newContentElement.wizardItems.common.header = Classic Content-elements
+# mod.wizards.newContentElement.wizardItems.mask.header = Custom Content-elements
 
 # # Columns
 
@@ -36,7 +36,7 @@
 #     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_teasers)
 # [end]
 
-# # Identbild
+# # Landingpage Image
 # [globalVar = GP:colPos==7]
 #     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_imagelandingpage)
 # [end]
@@ -51,38 +51,19 @@
 #     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_contact)
 # [end]
 
-
 # # Content
 # [globalVar = GP:colPos==0]
 #     mod.wizards.newContentElement.wizardItems.common.show := addToList(text,table,uploads)
 #     mod.wizards.newContentElement.wizardItems.special.show := addToList(shortcut)
 #     mod.wizards.newContentElement.wizardItems.mask.show := addToList(mask_responsiveimage, mask_employees, mask_gallery)
-#     # mod.wizards.newContentElement.wizardItems.plugins.show := addToList(selectedfilesteaser,allfilesteaser,allfiles,createlink)
 # [end]
 
 # # Content Aside: Documents
 # [globalVar = GP:colPos==13]
-#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(createlink)
 #     mod.wizards.newContentElement.wizardItems.common.show := addToList(uploads)
 # [end]
 
-
-# # Content
-# [globalVar = GP:colPos==17]
-#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(allfiles,selectedfiles)
-# [end]
-
-# # Filepool / Stellungnahmen / Stellen
-# [globalVar = GP:colPos==17]
-#     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(allfiles,selectedfiles)
-# [end]
-
-# # Suche
+# # Search
 # [globalVar = GP:colPos==18]
 #     mod.wizards.newContentElement.wizardItems.plugins.show := addToList(ke_search_pi1,ke_search_pi2)
-# [end]
-
-# # Hidden keywords for ke_search
-# [globalVar = GP:colPos==80]
-#     mod.wizards.newContentElement.wizardItems.common.show := addToList(text)
 # [end]

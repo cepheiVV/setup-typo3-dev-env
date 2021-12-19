@@ -8,13 +8,13 @@
 
     # header_layout {
         # altLabels {
-            # 0 = Standard
-            # 1 = Überschrift 1
-            # 2 = Überschrift 2
-            # 3 = Überschrift 3
-            # 4 = Überschrift 4
-            # 5 = Überschrift 5
-            # 100 = Überschrift verbergen
+            # 0 = Default
+            # 1 = Header 1
+            # 2 = Header 2
+            # 3 = Header 3
+            # 4 = Header 4
+            # 5 = Header 5
+            # 100 = Header hidden
         # }
     # }
 

@@ -1,6 +1,6 @@
 
 # TCAdefaults {
-  # tt_content {
-    # layout = 1
-  # }
+#   tt_content {
+#     layout = 1
+#   }
 # }
