@@ -249,18 +249,24 @@ install_optional_extensions () {
 
       if [ "${EXTENSION}" = "mask/mask" ] ; then
          if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-            ddev composer req $EXTENSION:^4
+            sed -i "" 's|^\        "typo3/cms-core\".*|&,\n        "mask\/mask\": \"^4\"|' packages/sitepackage/composer.json
+            sed -i "" "s|^\            \'typo3\'.*|&,\n            \'mask\' => \'\'|" packages/sitepackage/ext_emconf.php
+            sleep 1
+            ddev composer req $EXTENSION:^4 --no-interaction
          else
-            ddev composer req $EXTENSION
+            sed -i "" 's|^\        "typo3/cms-core\".*|&,\n        "mask\/mask\": \"^7\"|' packages/sitepackage/composer.json
+            sed -i "" "s|^\            \'typo3\'.*|&,\n            \'mask\' => \'\'|" packages/sitepackage/ext_emconf.php
+            sleep 1
+            ddev composer req $EXTENSION:^7 --no-interaction
          fi
       elif [ "${EXTENSION}" = "georgringer/news" ] ; then
          if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-            ddev composer req $EXTENSION:^8
+            ddev composer req $EXTENSION:^8 --no-interaction
          else
-            ddev composer req $EXTENSION
+            ddev composer req $EXTENSION --no-interaction
          fi
       else
-         ddev composer req $EXTENSION
+         ddev composer req $EXTENSION --no-interaction
       fi
    done
 }
@@ -473,35 +479,35 @@ printf "${SUCCESS} - Main composer.json of the project created${NC}"
 printf "${NOTE}Starting composer install${NC}"
 printf "${WARNING}This may take a while!${NC}"
 printf "${WARNING}Keep calm and have a coffee!${NC}"
-ddev composer install
+ddev composer install --no-interaction
 printf "${NOTE}Installing additional extensions${NC}"
 
 
 
 if [ "${setup_typo3version_minor}" = "11.5" ] ; then
    ddev config --php-version 8.0
-   ddev composer req helhum/typo3-console
-   ddev composer req tpwd/ke_search
+   ddev composer req helhum/typo3-console --no-interaction
+   ddev composer req tpwd/ke_search --no-interaction
    printf "${NOTICE} We cannot install fluidtypo3/vhs${NC}"
    printf "${NOTICE} as there are no compatible versions yet${NC}"
 elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
    # we need to specify typo3-console version
    ddev config --php-version 7.4
-   ddev composer req helhum/typo3-console:^6
-   ddev composer req fluidtypo3/vhs
-   ddev composer req tpwd/ke_search
+   ddev composer req helhum/typo3-console:^6 --no-interaction
+   ddev composer req fluidtypo3/vhs --no-interaction
+   ddev composer req tpwd/ke_search --no-interaction
 else
    # we need to specify typo3-console version
-   ddev composer req helhum/typo3-console:^5
-   ddev composer req fluidtypo3/vhs
-   ddev composer req tpwd/ke_search:^4
+   ddev composer req helhum/typo3-console:^5 --no-interaction
+   ddev composer req fluidtypo3/vhs --no-interaction
+   ddev composer req tpwd/ke_search:^4 --no-interaction
 fi
 
 if [ $install_bootstrap = true ] ; then
    if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-      ddev composer req bk2k/bootstrap-package:^11
+      ddev composer req bk2k/bootstrap-package:^11 --no-interaction
    else
-      ddev composer req bk2k/bootstrap-package
+      ddev composer req bk2k/bootstrap-package --no-interaction
    fi
 fi
 
