@@ -74,7 +74,8 @@ ask_typo3version_options() {
     printf "${INPUT}9) 9.5${NC}"
     printf "${INPUT}10) 10.4${NC}"
     printf "${INPUT}11) 11.5${NC}"
-    read -r -p "Enter version [11]: " ver
+    printf "${INPUT}12) 12.4${NC}"
+    read -r -p "Enter version [12]: " ver
     case $ver in
         9)
             setup_typo3version_minor="9.5";;
@@ -82,8 +83,10 @@ ask_typo3version_options() {
             setup_typo3version_minor="10.4";;
         11)
             setup_typo3version_minor="11.5";;
+        12)
+            setup_typo3version_minor="12.4";;
         *)
-            setup_typo3version_minor="11.5";;
+            setup_typo3version_minor="12.4";;
     esac
 }
 
@@ -348,7 +351,7 @@ ddev config --project-type php
 ddev config --http-port $setup_port
 ddev config --docroot public --create-docroot
 ddev config --project-type typo3
-ddev config --php-version 7.4
+ddev config --php-version 8.1
 ddev config --web-environment="TYPO3_CONTEXT=Development/Local"
 
 
