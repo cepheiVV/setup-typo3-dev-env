@@ -63,23 +63,14 @@ install_optional_extensions () {
       printf "${NOTE}Installing optional extension: $EXTENSION${NC}${NC}"
 
       if [ "${EXTENSION}" = "mask/mask" ] ; then
-         if [ "${setup_typo3version_minor}" = "13.4" ] ; then
-            sed -i "" 's|^\        "typo3/cms-core\".*|&,\n        "mask\/mask\": \"^9\"|' packages/sitepackage/composer.json
-            sed -i "" "s|^\            \'typo3\'.*|&,\n            \'mask\' => \'\'|" packages/sitepackage/ext_emconf.php
-            sleep 1
-            ddev composer req $EXTENSION:^9 --no-interaction
-         else
-            sed -i "" 's|^\        "typo3/cms-core\".*|&,\n        "mask\/mask\": \"^8\"|' packages/sitepackage/composer.json
-            sed -i "" "s|^\            \'typo3\'.*|&,\n            \'mask\' => \'\'|" packages/sitepackage/ext_emconf.php
-            sleep 1
-            ddev composer req $EXTENSION:^8 --no-interaction
-         fi
+        # use mask version 9+ for both TYPO3 12 and 13
+         sed -i "" 's|^\        "typo3/cms-core\".*|&,\n        "mask\/mask\": \"^9\"|' packages/sitepackage/composer.json
+         sed -i "" "s|^\            \'typo3\'.*|&,\n            \'mask\' => \'\'|" packages/sitepackage/ext_emconf.php
+         sleep 1
+         ddev composer req $EXTENSION:^9 --no-interaction
       elif [ "${EXTENSION}" = "georgringer/news" ] ; then
-         if [ "${setup_typo3version_minor}" = "13.4" ] ; then
-            ddev composer req $EXTENSION:^11 --no-interaction
-         else
-            ddev composer req $EXTENSION:^10 --no-interaction
-         fi
+         # use news version 12+ for both TYPO3 12 and 13
+         ddev composer req $EXTENSION:^12 --no-interaction
       else
          ddev composer req $EXTENSION --no-interaction
       fi
@@ -271,13 +262,10 @@ uploads/*
 /public/typo3conf
 /public/fileadmin
 /public/typo3temp
-/private/index.php
-/private/typo3conf/ext
-/private/typo3
-/private/typo3temp
-/private/fileadmin
 /var/
 /vendor/
+/config/system/settings.php
+/config/system/additional.php
 
 EOM
 
@@ -297,33 +285,14 @@ printf "${WARNING}Keep calm and have a coffee!${NC}"
 ddev composer install --no-interaction
 printf "${NOTE}Installing additional extensions${NC}"
 
+# Install TYPO3 console v8+ for TYPO3 12/13 compatibility
+ddev composer req helhum/typo3-console:^8 --no-interaction
 
-
-if [ "${setup_typo3version_minor}" = "11.5" ] ; then
-   ddev config --php-version 8.0
-   ddev composer req helhum/typo3-console --no-interaction
-   ddev composer req tpwd/ke_search --no-interaction
-   printf "${NOTICE} We cannot install fluidtypo3/vhs${NC}"
-   printf "${NOTICE} as there are no compatible versions yet${NC}"
-elif [ "${setup_typo3version_minor}" = "10.4" ] ; then
-   # we need to specify typo3-console version
-   ddev config --php-version 7.4
-   ddev composer req helhum/typo3-console:^6 --no-interaction
-   ddev composer req fluidtypo3/vhs --no-interaction
-   ddev composer req tpwd/ke_search --no-interaction
-else
-   # we need to specify typo3-console version
-   ddev composer req helhum/typo3-console:^5 --no-interaction
-   ddev composer req fluidtypo3/vhs --no-interaction
-   ddev composer req tpwd/ke_search:^4 --no-interaction
-fi
+# Install other extensions
+ddev composer req tpwd/ke_search:^6 --no-interaction
 
 if [ $install_bootstrap = true ] ; then
-   if [ "${setup_typo3version_minor}" = "9.5" ] ; then
-      ddev composer req bk2k/bootstrap-package:^11 --no-interaction
-   else
-      ddev composer req bk2k/bootstrap-package --no-interaction
-   fi
+   ddev composer req bk2k/bootstrap-package --no-interaction
 fi
 
 install_optional_extensions
@@ -332,11 +301,9 @@ install_optional_extensions
 # Prepare TYPO3
 # --------------------------------------
 printf "${NOTE}Preparing TYPO3${NC}"
-cd private
-touch FIRST_INSTALL
-cd typo3conf
-touch AdditionalConfiguration.php
-/bin/cat <<EOM >AdditionalConfiguration.php
+mkdir -p config/system
+touch config/system/additional.php
+/bin/cat <<EOM >config/system/additional.php
 <?php
 
     \$GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '.*';
@@ -363,6 +330,10 @@ touch AdditionalConfiguration.php
 
 EOM
 
+# Create public directory if it doesn't exist
+mkdir -p public
+touch public/FIRST_INSTALL
+
 printf "${NOTE}Starting up ddev${NC}"
 printf "${WARNING}Docker must be running at this point!${NC}"
 cd "${abs_setup_basedirectory}"
@@ -375,11 +346,10 @@ ddev start
 # --------------------------------------
 generate_password
 printf "${NOTE}Installing TYPO3${NC}"
-ddev exec ./vendor/bin/typo3cms install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
-ddev exec ./vendor/bin/typo3cms install:fixfolderstructure
+ddev exec ./vendor/bin/typo3 install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
+ddev exec ./vendor/bin/typo3 install:fixfolderstructure
 
 # add template record
-
 ddev exec mysql --user=db --password=db db << EOF
 INSERT INTO sys_template (pid, title, root, clear, constants, config) VALUES (1, 'Bootstrap Package', 1, 3, "@import 'EXT:sitepackage/Configuration/TypoScript/constants.typoscript'", "@import 'EXT:sitepackage/Configuration/TypoScript/setup.typoscript'");
 EOF
@@ -391,8 +361,7 @@ printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
 # Activate extensions
 # --------------------------------------
 printf "${NOTE}Activating extensions${NC}"
-#ddev exec ./vendor/bin/typo3cms install:generatepackagestates
-ddev exec ./vendor/bin/typo3cms install:extensionsetupifpossible
+ddev exec ./vendor/bin/typo3 install:extensionsetupifpossible
 
 
 #
