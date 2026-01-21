@@ -22,9 +22,19 @@ SUCCESS='\033[0;32m' #green
 INFO='\033[0;34m' #blue
 YELLOW='\033[1;33m' #yellow
 NC='\033[0m\n' # set no color and line end
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
 
+# Box drawing characters
+BOX_TL='╭'
+BOX_TR='╮'
+BOX_BL='╰'
+BOX_BR='╯'
+BOX_H='─'
+BOX_V='│'
 
-OPTIONAL_EXTENSIONS=("mask/mask" "georgringer/news")
+OPTIONAL_EXTENSIONS=("mask/mask" "georgringer/news" "praetorius/vite-asset-collector")
 OPTIONAL_EXTENSIONS_INSTALL=()
 
 
@@ -32,8 +42,49 @@ OPTIONAL_EXTENSIONS_INSTALL=()
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source "${SCRIPT_DIR}/functions.sh"
 
+# Visual helper functions
 print_line() {
-   printf "${NOTE}—————————————————————${NC}"
+   printf "${DIM}────────────────────────────────────────────────${RESET}\n"
+}
+
+print_banner() {
+   clear
+   printf "\n"
+   printf "${NOTE}  ╭─────────────────────────────────────────────╮${RESET}\n"
+   printf "${NOTE}  │                                             │${RESET}\n"
+   printf "${NOTE}  │${RESET}${BOLD}     TYPO3 + DDEV Project Setup Wizard      ${RESET}${NOTE}│${RESET}\n"
+   printf "${NOTE}  │                                             │${RESET}\n"
+   printf "${NOTE}  │${RESET}${DIM}             Quick & easy setup               ${RESET}${NOTE}│${RESET}\n"
+   printf "${NOTE}  │                                             │${RESET}\n"
+   printf "${NOTE}  ╰─────────────────────────────────────────────╯${RESET}\n"
+   printf "\n"
+}
+
+print_step() {
+   local step=$1
+   local total=$2
+   local title=$3
+   printf "\n"
+   printf "${YELLOW}  ▶ Step ${step}/${total}: ${title}${RESET}\n"
+   print_line
+}
+
+print_substep() {
+   local msg=$1
+   printf "${DIM}    ├─${RESET} ${msg}\n"
+}
+
+print_substep_done() {
+   local msg=$1
+   printf "${SUCCESS}    ✓${RESET} ${msg}\n"
+}
+
+print_success_box() {
+   local title=$1
+   printf "\n"
+   printf "${SUCCESS}  ╭─────────────────────────────────────────────╮${RESET}\n"
+   printf "${SUCCESS}  │${RESET}${BOLD}  ✓ ${title}${RESET}\n"
+   printf "${SUCCESS}  ╰─────────────────────────────────────────────╯${RESET}\n"
 }
 
 # This function makes the substitutions more robust
@@ -52,7 +103,7 @@ expandVarsStrict(){
 display_optional_extensions () {
    for EXTENSION in "${OPTIONAL_EXTENSIONS_INSTALL[@]}"
    do
-      printf "${NOTE}Install extension $EXTENSION: ✅${NC}"
+      printf "${NOTE}  │${RESET}  ${SUCCESS}✓${RESET} ${EXTENSION}\n"
    done
 }
 
@@ -71,6 +122,10 @@ install_optional_extensions () {
       elif [ "${EXTENSION}" = "georgringer/news" ] ; then
          # use news version 12+ for both TYPO3 12 and 13
          ddev composer req $EXTENSION:^12 --no-interaction
+      elif [ "${EXTENSION}" = "praetorius/vite-asset-collector" ] ; then
+         ddev composer req $EXTENSION --no-interaction
+         ddev add-on get s2b/ddev-vite-sidecar
+         ddev restart
       else
          ddev composer req $EXTENSION --no-interaction
       fi
@@ -78,11 +133,14 @@ install_optional_extensions () {
 }
 
 generate_password() {
-   print_line
-   printf "${NOTE}Generating admin password${NC}"
-   admin_password=`openssl rand -base64 12`
-   printf "${NOTE}Password generated 🔐${NC}"
-   print_line
+   # TYPO3 13 password policy requires: min 8 chars, uppercase, lowercase, digit, special char
+   # Generate password with guaranteed character types (macOS compatible)
+   local upper=$(openssl rand -base64 32 | tr -dc 'A-Z' | head -c 2)
+   local lower=$(openssl rand -base64 32 | tr -dc 'a-z' | head -c 4)
+   local num=$(openssl rand -base64 32 | tr -dc '0-9' | head -c 2)
+   local spec='#!'
+   # Combine in fixed pattern: Uppercase + lowercase + digits + special
+   admin_password="${upper}${lower}${num}${spec}"
    return
 }
 
@@ -90,43 +148,89 @@ generate_password() {
 #
 # init
 # --------------------------------------
-printf "${NOTE}Preparing to spin up a new TYPO3 website with ddev and 🔐 typo3-secure-web${NC}"
-printf "${NOTE}We will ask you a series of questions about your project,${NC}"
-printf "${NOTE}prepare a config, and launch it.${NC}"
+print_banner
+
+printf "  ${DIM}We'll guide you through setting up a new TYPO3 project.${RESET}\n"
+printf "  ${DIM}You'll be asked a series of questions about your project.${RESET}\n\n"
+
 ask_continue
 if [[ $ok =~ 0 ]] ; then
-    printf "${WARNING}exit!${NC}"
+    printf "\n${WARNING}  Setup cancelled.${RESET}\n"
     exit 1
 fi
+
+# System checks
+printf "\n${BOLD}  Checking requirements...${RESET}\n"
 
 # check if .ddev is installed before starting this process
 if command -v ddev &> /dev/null ; then
-  printf "${SUCCESS}ddev found${NC}"
+  printf "${SUCCESS}    ✓ ddev found${RESET}\n"
 else
-  printf "${WARNING}No ddev installed!${NC}"
+  printf "${WARNING}    ✗ ddev not found!${RESET}\n"
+  printf "${DIM}      Please install ddev first: https://ddev.readthedocs.io/en/stable/${RESET}\n"
   exit 1
 fi
 
-# check if /Applications/Docker.app exists before starting this process
-docker_path="/Applications/Docker.app"
-if [ -d $docker_path ]; then
-    printf "${SUCCESS}Docker found${NC}"
-    # Start docker app
-    if ! docker info > /dev/null 2>&1; then
-      printf "${NOTE} - Startup docker ${NC}"
-      open /Applications/Docker.app --background
-    fi
-else
-    printf "${WARNING}${docker_path} not found!${NC}"
-    printf "${WARNING}Make sure Docker is installed!${NC}"
+# check if docker CLI is available
+if ! command -v docker &> /dev/null; then
+    printf "${WARNING}    ✗ Docker CLI not found!${RESET}\n"
+    printf "${DIM}      Please install Docker Desktop, OrbStack, Colima, or another Docker-compatible runtime.${RESET}\n"
     exit 1
 fi
 
+# check if docker daemon is running, if not try to start a compatible runtime
+if ! docker info > /dev/null 2>&1; then
+    printf "${YELLOW}    ⏳ Docker daemon not running, attempting to start...${RESET}\n"
+
+    # Try to find and start a container runtime (in order of preference)
+    started=false
+
+    if [ -d "/Applications/OrbStack.app" ]; then
+        printf "${DIM}       Starting OrbStack...${RESET}\n"
+        open -a OrbStack --background
+        started=true
+    elif [ -d "/Applications/Docker.app" ]; then
+        printf "${DIM}       Starting Docker Desktop...${RESET}\n"
+        open -a Docker --background
+        started=true
+    elif command -v colima &> /dev/null; then
+        printf "${DIM}       Starting Colima...${RESET}\n"
+        colima start &> /dev/null &
+        started=true
+    elif [ -d "/Applications/Rancher Desktop.app" ]; then
+        printf "${DIM}       Starting Rancher Desktop...${RESET}\n"
+        open -a "Rancher Desktop" --background
+        started=true
+    fi
+
+    if [ "$started" = true ]; then
+        # Wait for docker daemon to become available (max 60 seconds)
+        counter=0
+        while ! docker info > /dev/null 2>&1; do
+            sleep 2
+            counter=$((counter + 1))
+            if [ $counter -gt 30 ]; then
+                printf "${WARNING}    ✗ Timeout waiting for Docker daemon!${RESET}\n"
+                exit 1
+            fi
+        done
+        printf "${SUCCESS}    ✓ Docker daemon started${RESET}\n"
+    else
+        printf "${WARNING}    ✗ No supported container runtime found!${RESET}\n"
+        printf "${DIM}      Please install Docker Desktop, OrbStack, Colima, or Rancher Desktop.${RESET}\n"
+        exit 1
+    fi
+else
+    printf "${SUCCESS}    ✓ Docker daemon running${RESET}\n"
+fi
 
 
 #
 # get variables
 # --------------------------------------
+print_step 1 5 "Project Configuration"
+printf "\n"
+
 pwd=$(pwd)
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 ask_repository_question
@@ -135,8 +239,10 @@ ask_newbasedirectory
 ask_projectname
 ask_namespace
 ask_port
+printf "\n  ${BOLD}Optional Extensions${RESET}\n"
 ask_bootstrap_question
 ask_optional_extensions
+ask_phpmyadmin_question
 ask_confirmsetup
 
 
@@ -144,103 +250,57 @@ ask_confirmsetup
 #
 # start to setup .ddev
 # --------------------------------------
-printf "${SUCCESS}Starting to setup .ddev!${NC}"
-printf "${NOTE} - Switching to base directory ./${abs_setup_basedirectory} ${NC}"
+print_step 2 5 "Setting up DDEV"
+
 cd "${abs_setup_basedirectory}"
+print_substep "Configuring ddev..."
+ddev config --project-name $setup_projectname >/dev/null 2>&1
+ddev config --project-type php >/dev/null 2>&1
+ddev config --router-http-port $setup_port >/dev/null 2>&1
+ddev config --docroot public >/dev/null 2>&1
+ddev config --project-type typo3 >/dev/null 2>&1
+ddev config --php-version 8.2 >/dev/null 2>&1
+ddev config --web-environment="TYPO3_CONTEXT=Development/Local" >/dev/null 2>&1
+print_substep_done "DDEV configured"
 
-printf "${NOTE} - Initializing ddev ${NC}"
-ddev config --project-name $setup_projectname
-ddev config --project-type php
-ddev config --http-port $setup_port
-ddev config --docroot public --create-docroot
-ddev config --project-type typo3
-ddev config --php-version 8.2
-ddev config --web-environment="TYPO3_CONTEXT=Development/Local"
-
-
-printf "${NOTE} - Setup project directories ${NC}"
+print_substep "Creating project structure..."
 touch .editorconfig
 touch .gitignore
-mkdir .vscode
+mkdir -p .vscode
 touch .vscode/extensions.json
-mkdir -p packages
-cd packages
-printf "${SUCCESS} - base file structure created${NC}"
+mkdir -p packages/sitepackage
+cd packages/sitepackage
+mkdir -p Classes/{Hooks,ViewHelpers}
+mkdir -p Configuration/{TCA/Overrides,RTE,TypoScript/{Extensions/{FluidStyledContent,KeSearch},Includes}}
+mkdir -p Resources/Private/{Templates,Partials,Layouts,Language,Extensions}
+mkdir -p Resources/Public/{dist,Icons,JavaScript,RTE}
 
-mkdir -p sitepackage
-cd sitepackage
-mkdir -p Classes
-mkdir -p Classes/Hooks
-mkdir -p Classes/ViewHelpers
-mkdir -p Configuration
-mkdir -p Configuration/TCA
-mkdir -p Configuration/TCA/Overrides
-mkdir -p Configuration/RTE
-mkdir -p Configuration/TypoScript
-mkdir -p Configuration/TypoScript/Extensions
-mkdir -p Configuration/TypoScript/Extensions/FluidStyledContent
-mkdir -p Configuration/TypoScript/Extensions/KeSearch
-mkdir -p Configuration/TypoScript/Includes
-mkdir -p Resources
-mkdir -p Resources/Private
-mkdir -p Resources/Private/Templates
-mkdir -p Resources/Private/Partials
-mkdir -p Resources/Private/Layouts
-mkdir -p Resources/Private/Language
-mkdir -p Resources/Private/Extensions
-mkdir -p Resources/Public
-mkdir -p Resources/Public/dist
-mkdir -p Resources/Public/Icons
-mkdir -p Resources/Public/JavaScript
-mkdir -p Resources/Public/RTE
-
-
-touch composer.json
-touch ext_emconf.php
-touch ext_tables.php
-touch ext_localconf.php
+touch composer.json ext_emconf.php ext_tables.php ext_localconf.php
 cp "${SCRIPT_DIR}/templates/CustomRte.yaml" Configuration/RTE/CustomRte.yaml
 cp "${SCRIPT_DIR}/templates/CustomRte.css" Resources/Public/RTE/CustomRte.css
 cp -r "${SCRIPT_DIR}/templates/TsConfig" Configuration/
-touch Configuration/TypoScript/constants.typoscript
+cp "${SCRIPT_DIR}/templates/TsConfig/page.tsconfig" Configuration/page.tsconfig
+cp "${SCRIPT_DIR}/templates/TsConfig/user.tsconfig" Configuration/user.tsconfig
 echo -en '\n' > Configuration/TypoScript/constants.typoscript
-touch Configuration/TypoScript/setup.typoscript
 echo -en '\n' > Configuration/TypoScript/setup.typoscript
-touch Configuration/TypoScript/Includes/config.typoscript
-touch Configuration/TypoScript/Includes/page.typoscript
-touch Configuration/TypoScript/Includes/getContent.typoscript
-touch Resources/Private/Language/locallang.xlf
-touch Resources/Private/Language/locallang_db.xlf
-touch Resources/Private/Language/locallang_be.xlf
-printf "${SUCCESS} - file structure of sitepackage extension created${NC}"
+touch Configuration/TypoScript/Includes/{config,page,getContent}.typoscript
+touch Resources/Private/Language/{locallang,locallang_db,locallang_be}.xlf
+print_substep_done "Project structure created"
 
-
-# write composer.json
+print_substep "Creating sitepackage extension..."
 expandVarsStrict< "${SCRIPT_DIR}/templates/composer.json" > composer.json
-printf "${SUCCESS} - composer.json of base extension created${NC}"
-
-
-# write ext_emconf.php
 expandVarsStrict< "${SCRIPT_DIR}/templates/ext_emconf.php.txt" > ext_emconf.php
-printf "${SUCCESS} - ext_emconf.php of base extension created${NC}"
-
-
-#write ext_localconf.php
 expandVarsStrict< "${SCRIPT_DIR}/templates/ext_localconf.php.txt" > ext_localconf.php
-printf "${SUCCESS} - ext_localconf.php of base extension created${NC}"
 
-#write typoscript templates
-printf "${SUCCESS} - Adding typoscript templates${NC}"
 if [ $install_bootstrap = true ] ; then
    sed -i "" -e $'1 i\\\n'"@import 'EXT:bootstrap_package/Configuration/TypoScript/constants.typoscript'" Configuration/TypoScript/constants.typoscript
    expandVarsStrict< "${SCRIPT_DIR}/templates/setup.bootstrap.typoscript" > Configuration/TypoScript/setup.typoscript
 else
    expandVarsStrict< "${SCRIPT_DIR}/templates/setup.sitepackage.typoscript" > Configuration/TypoScript/setup.typoscript
 fi
-printf "${SUCCESS} - Configuration/TypoScript/setup.typoscript of base extension created${NC}"
+print_substep_done "Sitepackage extension created"
 
 cp "${SCRIPT_DIR}/templates/editorconfig"  "${abs_setup_basedirectory}/.editorconfig"
-printf "${SUCCESS} - added .editorconfig ${NC}"
 
 cd "${abs_setup_basedirectory}"
 
@@ -265,146 +325,140 @@ uploads/*
 /var/
 /vendor/
 /config/system/settings.php
-/config/system/additional.php
+/config/system/private.php
 
 EOM
 
-
-printf "${SUCCESS} - added .gitignore ${NC}"
-
 touch composer.json
-# write composer.json
 expandVarsStrict< "${SCRIPT_DIR}/templates/main-composer.json" > composer.json
-printf "${SUCCESS} - Main composer.json of the project created${NC}"
+print_substep_done "Project files created"
 
+print_step 3 5 "Installing Dependencies"
+printf "\n"
+printf "    ${DIM}This may take a few minutes... ☕${RESET}\n\n"
 
-
-printf "${NOTE}Starting composer install${NC}"
-printf "${WARNING}This may take a while!${NC}"
-printf "${WARNING}Keep calm and have a coffee!${NC}"
 ddev composer install --no-interaction
-printf "${NOTE}Installing additional extensions${NC}"
+print_substep_done "Core dependencies installed"
 
-# Install TYPO3 console v8+ for TYPO3 12/13 compatibility
-ddev composer req helhum/typo3-console:^8 --no-interaction
-
-# Install other extensions
-ddev composer req tpwd/ke_search:^6 --no-interaction
+print_substep "Installing TYPO3 extensions..."
+ddev composer req helhum/typo3-console:^8 --no-interaction >/dev/null 2>&1
+ddev composer req tpwd/ke_search:^6 --no-interaction >/dev/null 2>&1
 
 if [ $install_bootstrap = true ] ; then
-   ddev composer req bk2k/bootstrap-package --no-interaction
+   ddev composer req bk2k/bootstrap-package --no-interaction >/dev/null 2>&1
 fi
 
 install_optional_extensions
+print_substep_done "Extensions installed"
 
-#
-# Prepare TYPO3
-# --------------------------------------
-printf "${NOTE}Preparing TYPO3${NC}"
+print_substep "Creating configuration files..."
 mkdir -p config/system
-touch config/system/additional.php
-/bin/cat <<EOM >config/system/additional.php
-<?php
+expandVarsStrict< "${SCRIPT_DIR}/templates/additional.php.txt" > config/system/additional.php
+expandVarsStrict< "${SCRIPT_DIR}/templates/private.example.php.txt" > config/system/private.example.php
+cp config/system/private.example.php config/system/private.php
+print_substep_done "Configuration files created"
 
-    \$GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '.*';
-    \$GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default'] = [
-        'dbname' => 'db',
-        'host' => 'db',
-        'password' => 'db',
-        'port' => '3306',
-        'user' => 'db',
-        'driver' => 'mysqli',
-        'charset' => 'utf8mb4',
-        'tableoptions' => [
-            'charset' => 'utf8mb4',
-            'collate' => 'utf8mb4_unicode_ci',
-         ],
-    ];
-
-    // This mail configuration sends all emails to mailhog
-    \$GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport'] = 'smtp';
-    \$GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport_smtp_server'] = 'localhost:1025';
-
-    \$GLOBALS['TYPO3_CONF_VARS']['SYS']['devIPmask'] = '*';
-    \$GLOBALS['TYPO3_CONF_VARS']['SYS']['displayErrors'] = 1;
-
-EOM
-
-# Create public directory if it doesn't exist
 mkdir -p public
 touch public/FIRST_INSTALL
 
-printf "${NOTE}Starting up ddev${NC}"
-printf "${WARNING}Docker must be running at this point!${NC}"
+print_step 4 5 "Starting DDEV Environment"
+
 cd "${abs_setup_basedirectory}"
+print_substep "Starting containers..."
 ddev start
 
+if [ $install_phpmyadmin = true ] ; then
+   print_substep "Installing phpMyAdmin add-on..."
+   ddev add-on get ddev/ddev-phpmyadmin >/dev/null 2>&1
+   ddev restart >/dev/null 2>&1
+fi
+print_substep_done "DDEV environment ready"
 
+print_step 5 5 "Installing TYPO3"
 
-#
-# Install TYPO3
-# --------------------------------------
 generate_password
-printf "${NOTE}Installing TYPO3${NC}"
-ddev exec ./vendor/bin/typo3 install:setup --no-interaction --admin-user-name admin --admin-password $admin_password --database-user-name db --database-user-password db --site-name ${setup_projectname}
-ddev exec ./vendor/bin/typo3 install:fixfolderstructure
+print_substep "Running TYPO3 setup..."
+ddev exec ./vendor/bin/typo3 setup \
+  --driver=mysqli \
+  --host=db \
+  --port=3306 \
+  --dbname=db \
+  --username=db \
+  --password=db \
+  --admin-username=admin \
+  --admin-user-password="${admin_password}" \
+  --project-name="${setup_projectname}" \
+  --server-type=other \
+  --create-site="https://${setup_projectname}.ddev.site/" \
+  --no-interaction \
+  --force >/dev/null 2>&1
 
+# Remove FIRST_INSTALL file to skip Install Tool wizard
+rm -f public/FIRST_INSTALL FIRST_INSTALL
+print_substep_done "TYPO3 core installed"
+
+print_substep "Configuring database..."
 # add template record
 ddev exec mysql --user=db --password=db db << EOF
 INSERT INTO sys_template (pid, title, root, clear, constants, config) VALUES (1, 'Bootstrap Package', 1, 3, "@import 'EXT:sitepackage/Configuration/TypoScript/constants.typoscript'", "@import 'EXT:sitepackage/Configuration/TypoScript/setup.typoscript'");
 EOF
 
-printf "${SUCCESS}Created typoscript record in sys_template table${NC}"
-
-
-#
 # Activate extensions
-# --------------------------------------
-printf "${NOTE}Activating extensions${NC}"
-ddev exec ./vendor/bin/typo3 install:extensionsetupifpossible
+ddev exec ./vendor/bin/typo3 extension:setup >/dev/null 2>&1
 
-
-#
-# Add home page to db table:pages
-# --------------------------------------
-printf "${NOTE}Adding sample pages${NC}"
+# Add sample pages
 ddev exec mysql --user=db --password=db db << EOF
 TRUNCATE pages;
 INSERT INTO pages (\`pid\`, \`title\`, \`slug\`, \`doktype\`, \`is_siteroot\`) VALUES ('0', 'Home', '/', '1', '1'),('1', 'About', '/about', '1', '0'),('1', 'Page 1', '/page-1', '1', '0'),('1', 'Page 2', '/page-2', '1', '0');
 EOF
 
-if [ $install_bootstrap = true ] ; then
+# Create default backend user groups
+ddev exec mysql --user=db --password=db db << EOF
+INSERT INTO be_groups (title, description, groupMods, file_permissions, tables_select, tables_modify, pagetypes_select, non_exclude_fields) VALUES
+('Editor', 'Default editor user group', 'web_layout,web_list,web_info', 'readFolder,writeFolder,addFolder,renameFolder,moveFolder,deleteFolder,readFile,writeFile,addFile,renameFile,moveFile,deleteFile,copyFile,copyFolder', '', '', '', ''),
+('Advanced Editor', 'Advanced editor user group', 'web_layout,web_list,web_info,web_ViewpageView', 'readFolder,writeFolder,addFolder,renameFolder,moveFolder,deleteFolder,readFile,writeFile,addFile,renameFile,moveFile,deleteFile,copyFile,copyFolder', '', '', '', '');
+EOF
 
+if [ $install_bootstrap = true ] ; then
 ddev exec mysql --user=db --password=db db << EOF
 UPDATE pages
 SET backend_layout = "pagets__default", backend_layout_next_level = "pagets__2_columns"
 WHERE uid = 1;
 EOF
-printf "${NOTE}Updated layout fields for sample pages${NC}"
 fi
 
 mkdir -p "${abs_setup_basedirectory}/config/sites/${setup_projectname}"
 expandVarsStrict< "${SCRIPT_DIR}/templates/siteConfiguration.yaml" >  "${abs_setup_basedirectory}/config/sites/${setup_projectname}/config.yaml"
-printf "${NOTE}Created site configuration${NC}"
+print_substep_done "Database configured"
 
 if [ ! -z $repository_url ] ; then
-   printf "${NOTE}Setting up git${NC}"
-   git init
-   git add .
-   git commit -m 'Initial commit'
-   git remote add upstream "${repository_url}"
-   git push --set-upstream upstream main
+   print_substep "Initializing git repository..."
+   git init >/dev/null 2>&1
+   git add . >/dev/null 2>&1
+   git commit -m 'Initial commit' >/dev/null 2>&1
+   git remote add upstream "${repository_url}" >/dev/null 2>&1
+   git push --set-upstream upstream main >/dev/null 2>&1
+   print_substep_done "Git repository initialized"
 fi
 
 #
 # final instructions after install
 # --------------------------------------
-ddev describe
-printf "${SUCCESS}Setup complete!${NC}"
-printf "${NOTE}Open the ddev URL in a browser${NC}"
-printf "${NOTE}Admin user is: admin${NC}"
-printf "${NOTE}Admin password is: ${admin_password} ${NC}"
-
-printf "${NOTE}and follow the TYPO3 install process.${NC}"
-printf "${SUCCESS}Have fun with your new ddev env!${NC}"
-exit 1
+printf "\n\n"
+printf "${SUCCESS}  ╭───────────────────────────────────────────────────────────╮${RESET}\n"
+printf "${SUCCESS}  │                                                           │${RESET}\n"
+printf "${SUCCESS}  │${RESET}${BOLD}   ✓  Setup Complete!                                     ${RESET}${SUCCESS}│${RESET}\n"
+printf "${SUCCESS}  │                                                           │${RESET}\n"
+printf "${SUCCESS}  ├───────────────────────────────────────────────────────────┤${RESET}\n"
+printf "${SUCCESS}  │                                                           │${RESET}\n"
+printf "${SUCCESS}  │${RESET}   ${BOLD}Frontend:${RESET}  https://${setup_projectname}.ddev.site/\n"
+printf "${SUCCESS}  │${RESET}   ${BOLD}Backend:${RESET}   https://${setup_projectname}.ddev.site/typo3\n"
+printf "${SUCCESS}  │                                                           │${RESET}\n"
+printf "${SUCCESS}  │${RESET}   ${BOLD}Username:${RESET}  admin\n"
+printf "${SUCCESS}  │${RESET}   ${BOLD}Password:${RESET}  ${admin_password}\n"
+printf "${SUCCESS}  │                                                           │${RESET}\n"
+printf "${SUCCESS}  ╰───────────────────────────────────────────────────────────╯${RESET}\n"
+printf "\n"
+printf "  ${DIM}Run 'ddev describe' in the project directory for more info.${RESET}\n"
+printf "  ${DIM}Happy coding! 🚀${RESET}\n\n"
+exit 0

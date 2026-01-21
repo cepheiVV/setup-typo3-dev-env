@@ -1,0 +1,53 @@
+<?php
+defined('TYPO3') || die();
+
+$applicationContext = \TYPO3\CMS\Core\Core\Environment::getContext();
+
+// Production Settings
+if ($applicationContext == 'Production') {
+
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['dbname'] = '';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['host'] = '';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['user'] = '';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['password'] = '';
+
+    // disable deprecation log
+    $GLOBALS['TYPO3_CONF_VARS']['LOG']['TYPO3']['CMS']['deprecations']['writerConfiguration'][\TYPO3\CMS\Core\Log\LogLevel::NOTICE] = [];
+
+    $GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport'] = 'smtp';
+    $GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport_smtp_server'] = '';
+
+    $GLOBALS['TYPO3_CONF_VARS']['BE']['debug'] = false;
+    $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = false;
+
+    $GLOBALS['TYPO3_CONF_VARS']['BE']['lockSSL'] = true;
+
+}
+
+// Staging Settings
+if ($applicationContext == 'Production/Staging') {
+
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['dbname'] = '';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['host'] = '';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['user'] = '';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['password'] = '';
+
+    $GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport'] = 'smtp';
+    $GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport_smtp_server'] = '';
+
+    $GLOBALS['TYPO3_CONF_VARS']['BE']['debug'] = false;
+    $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = false;
+
+}
+
+// ddev Settings
+if ($applicationContext == 'Development/Local') {
+
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['dbname'] = 'db';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['host'] = 'db';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['user'] = 'db';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['password'] = 'db';
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['port'] = 3306;
+    $GLOBALS['TYPO3_CONF_VARS']['DB']['Connections']['Default']['driver'] = 'mysqli';
+
+}

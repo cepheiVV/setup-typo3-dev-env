@@ -1,0 +1,47 @@
+<?php
+defined('TYPO3') || die();
+
+$applicationContext = \TYPO3\CMS\Core\Core\Environment::getContext();
+
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] .= ' (' . (string)$applicationContext . ')';
+
+// Production Settings
+if ($applicationContext == 'Production') {
+
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '';
+
+}
+
+// Staging Settings
+if ($applicationContext == 'Production/Staging') {
+
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = 'staging.';
+
+}
+
+// ddev Settings
+if ($applicationContext == 'Development/Local') {
+
+    $GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport'] = 'smtp';
+    $GLOBALS['TYPO3_CONF_VARS']['MAIL']['transport_smtp_server'] = 'localhost:1025';
+
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['trustedHostsPattern'] = '${setup_projectname}.ddev.site';
+
+    $GLOBALS['TYPO3_CONF_VARS']['BE']['debug'] = true;
+    $GLOBALS['TYPO3_CONF_VARS']['FE']['debug'] = true;
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['displayErrors'] = 1;
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['devIPmask'] = '*';
+}
+
+$privateConfiguration = \TYPO3\CMS\Core\Core\Environment::getConfigPath() . '/system/private.php';
+if (file_exists($privateConfiguration)) {
+    require_once($privateConfiguration);
+} else {
+    $isCommandLineContext = \TYPO3\CMS\Core\Core\Environment::isCli();
+    $errorMessage = 'Missing file: ' . $privateConfiguration . ' called from ' . __FILE__;
+    if ($isCommandLineContext) {
+        echo $errorMessage;
+    } else {
+        throw new Exception($errorMessage, 9802515520);
+    }
+}

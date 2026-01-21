@@ -1,5 +1,8 @@
 <?php
-defined('TYPO3_MODE') || die();
+
+declare(strict_types=1);
+
+defined('TYPO3') || die();
 
 call_user_func(
     function () {
@@ -7,20 +10,5 @@ call_user_func(
       * Add default RTE configuration
       */
       $GLOBALS['TYPO3_CONF_VARS']['RTE']['Presets']['sitepackage'] = 'EXT:sitepackage/Configuration/RTE/CustomRte.yaml';
-
-      /***************
-      * PageTS
-      ***************/
-      \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
-         '@import \'EXT:sitepackage/Configuration/TsConfig/Page/All.tsconfig\''
-      );
-
-      /***************
-      * UserTS
-      ***************/
-      \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addUserTSConfig(
-         '@import \'EXT:sitepackage/Configuration/TsConfig/User/Everyone.tsconfig\''
-      );
-
     }
 );

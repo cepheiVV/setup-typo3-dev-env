@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ask_continue () {
-    printf "${INPUT}Continue? [y/N]: ${NC}"
+    printf "  ${INPUT}Continue? [y/N]: ${RESET}"
     read -r i
     case $i in
         [yY])
@@ -11,18 +11,17 @@ ask_continue () {
             ok=0
             return;;
         *)
-            printf "${WARNING}Invalid Option!${NC}"
+            printf "  ${WARNING}Invalid option!${RESET}\n"
             ask_continue
             ;;
     esac
 }
 
 ask_typo3version_options() {
-    PS3="Set the desired TYPO3 version: "
-
-    printf "${INPUT}Select typo3 version:${NC}"
-    printf "${INPUT}12) 12.4${NC}"
-    printf "${INPUT}13) 13.4${NC}"
+    printf "  ${INPUT}Select TYPO3 version:${RESET}\n"
+    printf "    ${DIM}12)${RESET} 12.4 LTS\n"
+    printf "    ${DIM}13)${RESET} 13.4 LTS\n"
+    printf "  "
     read -r -p "Enter version [13]: " ver
     case $ver in
         12)
@@ -35,15 +34,16 @@ ask_typo3version_options() {
 }
 
 ask_newbasedirectory() {
-   printf "${NOTE}Enter new path name (relative to current - ${INPUT}to move up use ../${NOTE}):${NC}"
+   printf "  ${INPUT}Project directory ${DIM}(relative path, use ../ to move up)${RESET}\n"
+   printf "  "
    read -r -p "${pwd}/" setup_basedirectory
    if ! [[ $setup_basedirectory =~ ^[a-zA-Z_0-9\/\.\-]+$ ]] ; then
-      printf "${WARNING}Please, don't use spaces or special chars other than '_' or '-' !${NC}"
+      printf "  ${WARNING}Please don't use spaces or special chars other than '_' or '-'${RESET}\n"
       ask_newbasedirectory
    fi
 
-   if [ "$(ls -A $setup_basedirectory)" ] ; then
-      printf "${WARNING}The target directory ${setup_basedirectory} is not empty! Please select a different path.${NC}"
+   if [ -d "$setup_basedirectory" ] && [ "$(ls -A $setup_basedirectory 2>/dev/null)" ] ; then
+      printf "  ${WARNING}Directory not empty! Please select a different path.${RESET}\n"
       ask_newbasedirectory
    fi
 
@@ -51,22 +51,22 @@ ask_newbasedirectory() {
    mkdir -p $setup_basedirectory
 
    abs_setup_basedirectory="$(cd "$(dirname "${cur_dir}/${setup_basedirectory}")"; pwd)/$(basename "${cur_dir}/${setup_basedirectory}")"
-   printf "${SUCCESS}Created directory ${abs_setup_basedirectory} !${NC}"
+   printf "  ${SUCCESS}✓ Directory created${RESET}\n"
    cd "${cur_dir}"
 }
 
 ask_projectname() {
-    printf "${INPUT}Set the name of the client or project in lowercase and no spaces.${NC}"
-    printf "${INPUT}Project name:${NC}"
-    read -r setup_projectname
+    printf "  ${INPUT}Project name ${DIM}(lowercase, no spaces)${RESET}\n"
+    printf "  "
+    read -r -p "Name: " setup_projectname
 
     if [[ $setup_projectname =~ [A-Z] ]] ; then
-        printf "${WARNING}Only use lowercase letters!${NC}"
+        printf "  ${WARNING}Only use lowercase letters!${RESET}\n"
         ask_projectname
     fi
 
     if ! [[ $setup_projectname =~ ^[a-z_0-9\-]+$ ]] ; then
-        printf "${WARNING}Don't use spaces or special chars other than underscore!${NC}"
+        printf "  ${WARNING}Don't use spaces or special chars other than underscore!${RESET}\n"
         ask_projectname
     fi
 
@@ -74,12 +74,13 @@ ask_projectname() {
 }
 
 ask_namespace() {
-    printf "${INPUT}Please enter vendor name (used in namespace) of the client or project:${NC}"
-    read -r  -p "Enter vendor [ITSC]: " setup_namespace
+    printf "  ${INPUT}Vendor namespace ${DIM}(for PHP namespace)${RESET}\n"
+    printf "  "
+    read -r -p "Vendor [ITSC]: " setup_namespace
     setup_namespace=${setup_namespace:-ITSC}
 
     if ! [[ $setup_namespace =~ ^[a-zA-Z0-9]+$ ]] ; then
-        printf "${WARNING}Please, don't use spaces or special characters!${NC}"
+        printf "  ${WARNING}Please don't use spaces or special characters!${RESET}\n"
         ask_namespace
     fi
 
@@ -89,9 +90,9 @@ ask_namespace() {
 }
 
 ask_port() {
-    printf "${INPUT}Set the port on which .ddev will be accessed.${NC}"
-    printf "${INPUT}Port [8080] : ${NC}"
-    read -r setup_port
+    printf "  ${INPUT}DDEV router port${RESET}\n"
+    printf "  "
+    read -r -p "Port [8080]: " setup_port
 
     # check if empty, then use default port
     if [ -z $setup_port ] ; then
@@ -99,7 +100,7 @@ ask_port() {
     fi
 
     if ! [[ $setup_port =~ ^[0-9]+$ ]] ; then
-        printf "${WARNING}Invalid Option!${NC}"
+        printf "  ${WARNING}Invalid port number!${RESET}\n"
         ask_port
     fi
 
@@ -107,20 +108,28 @@ ask_port() {
 }
 
 ask_confirmsetup() {
-    printf "${NOTE}Your setup is:${NC}"
-    print_line
-    printf "${NOTE}TYPO3 Version: ${SUCCESS}${setup_typo3version_minor}${NC}"
-    printf "${NOTE}Directory for project and ddev: ${SUCCESS}${abs_setup_basedirectory}${NC}"
-    printf "${NOTE}Project name: ${SUCCESS}${setup_projectname}${NC}"
-    printf "${NOTE}Project namespace: ${SUCCESS}${setup_namespace}${NC}"
-    printf "${NOTE}Port: ${SUCCESS}${setup_port}${NC}"
-
+    printf "\n"
+    printf "${NOTE}  ╭─────────────────────────────────────────────────╮${RESET}\n"
+    printf "${NOTE}  │${RESET}${BOLD}  Configuration Summary                          ${RESET}${NOTE}│${RESET}\n"
+    printf "${NOTE}  ├─────────────────────────────────────────────────┤${RESET}\n"
+    printf "${NOTE}  │${RESET}  TYPO3 Version:    ${SUCCESS}${setup_typo3version_minor}${RESET}\n"
+    printf "${NOTE}  │${RESET}  Project Name:     ${SUCCESS}${setup_projectname}${RESET}\n"
+    printf "${NOTE}  │${RESET}  Namespace:        ${SUCCESS}${setup_namespace}${RESET}\n"
+    printf "${NOTE}  │${RESET}  Directory:        ${SUCCESS}${abs_setup_basedirectory}${RESET}\n"
+    printf "${NOTE}  │${RESET}  Port:             ${SUCCESS}${setup_port}${RESET}\n"
+    printf "${NOTE}  ├─────────────────────────────────────────────────┤${RESET}\n"
+    printf "${NOTE}  │${RESET}${BOLD}  Extensions                                     ${RESET}${NOTE}│${RESET}\n"
+    printf "${NOTE}  ├─────────────────────────────────────────────────┤${RESET}\n"
     if [ $install_bootstrap = true ] ; then
-      printf "${NOTE}Install extension bk2k/bootstrap-package: ✅${NC}"
+      printf "${NOTE}  │${RESET}  ${SUCCESS}✓${RESET} bk2k/bootstrap-package\n"
     fi
     display_optional_extensions
-    printf "${NOTE}We will add few sample pages: ✅${NC}"
-    print_line
+    if [ $install_phpmyadmin = true ] ; then
+      printf "${NOTE}  │${RESET}  ${SUCCESS}✓${RESET} phpMyAdmin ${DIM}(ddev add-on)${RESET}\n"
+    fi
+    printf "${NOTE}  │${RESET}  ${SUCCESS}✓${RESET} Sample pages will be created\n"
+    printf "${NOTE}  ╰─────────────────────────────────────────────────╯${RESET}\n"
+    printf "\n"
     ask_continue
     if [[ $ok =~ 0 ]] ; then
         ask_typo3version_options
@@ -130,6 +139,7 @@ ask_confirmsetup() {
         ask_port
         ask_bootstrap_question
         ask_optional_extensions
+        ask_phpmyadmin_question
         ask_confirmsetup
     fi
 
@@ -137,7 +147,7 @@ ask_confirmsetup() {
 }
 
 ask_bootstrap_question () {
-   printf "${INPUT}Do you want to install bk2k/bootstrap-package package? [y/N] : ${NC}"
+   printf "  ${INPUT}Install bk2k/bootstrap-package? [y/N]: ${RESET}"
     read -r i
     case $i in
         [yY])
@@ -149,12 +159,24 @@ ask_bootstrap_question () {
     esac
 }
 
+ask_phpmyadmin_question () {
+   printf "\n  ${BOLD}DDEV Add-ons${RESET}\n"
+   printf "  ${INPUT}Install phpMyAdmin? [Y/n]: ${RESET}"
+    read -r i
+    case $i in
+        [nN])
+            install_phpmyadmin=false
+            return;;
+        *)
+            install_phpmyadmin=true
+            return;;
+    esac
+}
+
 ask_repository_question () {
-   printf "${INPUT}What is the remote repository url?${NC}"
-   printf "${INPUT}You can skip it by pressing enter${NC}"
-   printf "${INPUT}If you provide a url, we'll initialize the repo${NC}"
-   printf "${INPUT}and set it as upstream${NC}"
-   read -r repository_url
+   printf "  ${INPUT}Git repository URL ${DIM}(press Enter to skip)${RESET}\n"
+   printf "  "
+   read -r -p "URL: " repository_url
 }
 
 ask_optional_extensions () {
@@ -165,7 +187,7 @@ ask_optional_extensions () {
 }
 
 ask_optional_extension () {
-    printf "${INPUT}Do you want to install $1 package? [y/N] : ${NC}"
+    printf "  ${INPUT}Install $1? [y/N]: ${RESET}"
     read -r i
     case $i in
         [yY])
