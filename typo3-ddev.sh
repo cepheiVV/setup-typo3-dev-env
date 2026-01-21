@@ -259,7 +259,12 @@ ddev config --project-type php >/dev/null 2>&1
 ddev config --router-http-port $setup_port >/dev/null 2>&1
 ddev config --docroot public >/dev/null 2>&1
 ddev config --project-type typo3 >/dev/null 2>&1
-ddev config --php-version 8.2 >/dev/null 2>&1
+if [ "$setup_typo3version_minor" = "13.4" ] ; then
+   ddev config --php-version 8.3 >/dev/null 2>&1
+   ddev config --database=mariadb:11.4 >/dev/null 2>&1
+else
+   ddev config --php-version 8.2 >/dev/null 2>&1
+fi
 ddev config --web-environment="TYPO3_CONTEXT=Development/Local" >/dev/null 2>&1
 print_substep_done "DDEV configured"
 
@@ -342,7 +347,11 @@ print_substep_done "Core dependencies installed"
 
 print_substep "Installing TYPO3 extensions..."
 ddev composer req helhum/typo3-console:^8 --no-interaction >/dev/null 2>&1
-ddev composer req tpwd/ke_search:^6 --no-interaction >/dev/null 2>&1
+if [ "$setup_typo3version_minor" = "13.4" ] ; then
+   ddev composer req tpwd/ke_search:^7 --no-interaction >/dev/null 2>&1
+else
+   ddev composer req tpwd/ke_search:^6 --no-interaction >/dev/null 2>&1
+fi
 
 if [ $install_bootstrap = true ] ; then
    ddev composer req bk2k/bootstrap-package --no-interaction >/dev/null 2>&1
